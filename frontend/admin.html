@@ -161,9 +161,11 @@ tr:hover td{background:color-mix(in srgb,var(--pitch-2) 60%,transparent)}
         <label class="field"><span>Main stream link (iframe or HLS URL)</span><input id="f_stream" placeholder="https://…"></label>
 
 <!-- ADD THESE 3 EXTERNAL STREAM LINK FIELDS -->
-<input type="text" id="f_ext1" class="form-control" placeholder="https://..." />
-<input type="text" id="f_ext2" class="form-control" placeholder="https://..." />
-<input type="text" id="f_ext3" class="form-control" placeholder="https://..." />
+<div class="grid2">
+  <label class="field"><span>External Stream Spot 1 (Redirect URL)</span><input id="f_ext1" placeholder="https://external-site-1.com/live"></label>
+  <label class="field"><span>External Stream Spot 2 (Redirect URL)</span><input id="f_ext2" placeholder="https://external-site-2.com/live"></label>
+</div>
+<label class="field"><span>External Stream Spot 3 (Redirect URL)</span><input id="f_ext3" placeholder="https://external-site-3.com/live"></label>
         <label class="field"><span>Extra servers — one per line, as <code>Label|URL</code></span>
           <textarea id="f_backup" rows="3" placeholder="Hindi commentary|https://…"></textarea></label>
         <label class="field"><span>Poster image URL</span><input id="f_poster"></label>
@@ -171,8 +173,7 @@ tr:hover td{background:color-mix(in srgb,var(--pitch-2) 60%,transparent)}
           <label><input type="checkbox" id="f_featured"> Feature on the home banner</label>
           <label><input type="checkbox" id="f_visible" checked> Visible on the site</label>
         </div>
-        <!-- <button class="btn primary" id="saveMatch">Save match</button> -->
-         <button type="button" class="btn btn-primary" onclick="saveMatch()">Save match</button>
+        <button class="btn primary" id="saveMatch">Save match</button>
         <button class="btn" id="clearForm">Clear form</button>
         <input type="hidden" id="f_id">
       </div>
@@ -474,61 +475,26 @@ function toLocalInput(iso){
   const d = new Date(iso), p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-// function editMatch(id){
-//   const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
-//   document.getElementById('addTitle').textContent = 'Edit match';
-//   const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
-//   v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
-//   v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
-//   v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
-//   v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
-//   v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
-// v('f_ext1', m.extStream1 || m.ext_stream1);
-// v('f_ext2', m.extStream2 || m.ext_stream2);
-// v('f_ext3', m.extStream3 || m.ext_stream3);
-//   document.getElementById('f_featured').checked = !!m.featured;
-//   document.getElementById('f_visible').checked = m.visible !== false;
-//   if(m.league) document.getElementById('f_league').value = m.league.id;
-//   document.querySelector('[data-tab="add"]').click();
-//   window.scrollTo({top:0,behavior:'smooth'});
-// }
-
-function editMatch(m) {
-    document.getElementById('f_id').value = m.id || '';
-    document.getElementById('f_homeTeam').value = m.homeTeam || '';
-    document.getElementById('f_awayTeam').value = m.awayTeam || '';
-    document.getElementById('f_homeLogo').value = m.homeLogo || '';
-    document.getElementById('f_awayLogo').value = m.awayLogo || '';
-    
-    // Format Kick-off for datetime-local input
-    if (m.kickoffUtc) {
-        const d = new Date(m.kickoffUtc);
-        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        document.getElementById('f_kickoff').value = d.toISOString().slice(0, 16);
-    } else {
-        document.getElementById('f_kickoff').value = '';
-    }
-
-    document.getElementById('f_leagueId').value = m.league ? m.league.id : '';
-    document.getElementById('f_status').value = m.status || 'UPCOMING';
-    document.getElementById('f_homeScore').value = m.homeScore || '';
-    document.getElementById('f_awayScore').value = m.awayScore || '';
-    document.getElementById('f_description').value = m.description || '';
-    document.getElementById('f_streamUrl').value = m.streamUrl || '';
-    
-    // External Stream URLs
-    if (document.getElementById('f_ext1')) document.getElementById('f_ext1').value = m.extStream1 || '';
-    if (document.getElementById('f_ext2')) document.getElementById('f_ext2').value = m.extStream2 || '';
-    if (document.getElementById('f_ext3')) document.getElementById('f_ext3').value = m.extStream3 || '';
-    
-    document.getElementById('f_backupStreams').value = m.backupStreams || '';
-    document.getElementById('f_posterUrl').value = m.posterUrl || '';
-    document.getElementById('f_featured').checked = !!m.featured;
-    document.getElementById('f_visible').checked = m.visible !== false;
-
-    // Scroll to top of the form
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+function editMatch(id){
+  const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
+  document.getElementById('addTitle').textContent = 'Edit match';
+  const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
+  v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
+  v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
+  v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
+  v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
+  v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
+v('f_ext1', m.extStream1 || m.ext_stream1);
+v('f_ext2', m.extStream2 || m.ext_stream2);
+v('f_ext3', m.extStream3 || m.ext_stream3);
+  document.getElementById('f_featured').checked = !!m.featured;
+  document.getElementById('f_visible').checked = m.visible !== false;
+  if(m.league) document.getElementById('f_league').value = m.league.id;
+  document.querySelector('[data-tab="add"]').click();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
+
+
 
 
 document.getElementById('clearForm').addEventListener('click', ()=>{
@@ -537,100 +503,32 @@ document.getElementById('clearForm').addEventListener('click', ()=>{
   document.getElementById('addTitle').textContent='Add a match';
 });
 
-// document.getElementById('saveMatch').addEventListener('click', async ()=>{
-//   const g = i => document.getElementById(i).value.trim();
-//   if(!g('f_home')||!g('f_away')||!g('f_kick')){ toast('Teams and kick-off time are needed'); return; }
-//   const payload = {
-//     homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
-//     description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
-//     homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
-//     // Line 510 in your screenshot:
-// streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
-// extStream1:g('f_ext1'),
-// extStream2:g('f_ext2'),
-// extStream3:g('f_ext3'),
-//     // streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
-//     featured:document.getElementById('f_featured').checked,
-//     visible:document.getElementById('f_visible').checked,
-//     leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null
-//   };
-//   const id = document.getElementById('f_id').value;
-//   try{
-//     await call('/admin/matches'+(id?'/'+id:''), {method:id?'PUT':'POST', body:JSON.stringify(payload)});
-//     toast(id?'Match updated':'Match added');
-//     document.getElementById('clearForm').click(); loadAll();
-//   }catch(e){ toast(e.message); }
-// });
-async function saveMatch() {
-    // Safe helper functions so null elements don't crash execution
-    const getVal = (id) => {
-        const el = document.getElementById(id);
-        return el ? el.value : '';
-    };
+document.getElementById('saveMatch').addEventListener('click', async ()=>{
+  const g = i => document.getElementById(i).value.trim();
+  if(!g('f_home')||!g('f_away')||!g('f_kick')){ toast('Teams and kick-off time are needed'); return; }
+  const payload = {
+    homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
+    description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
+    homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
+    // Line 510 in your screenshot:
+streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+extStream1:g('f_ext1'),
+extStream2:g('f_ext2'),
+extStream3:g('f_ext3'),
+    // streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+    featured:document.getElementById('f_featured').checked,
+    visible:document.getElementById('f_visible').checked,
+    leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null
+  };
+  const id = document.getElementById('f_id').value;
+  try{
+    await call('/admin/matches'+(id?'/'+id:''), {method:id?'PUT':'POST', body:JSON.stringify(payload)});
+    toast(id?'Match updated':'Match added');
+    document.getElementById('clearForm').click(); loadAll();
+  }catch(e){ toast(e.message); }
+});
 
-    const getChecked = (id) => {
-        const el = document.getElementById(id);
-        return el ? el.checked : false;
-    };
 
-    const homeTeam = getVal('f_homeTeam').trim();
-    const awayTeam = getVal('f_awayTeam').trim();
-    const kickoffVal = getVal('f_kickoff');
-
-    if (!homeTeam || !awayTeam || !kickoffVal) {
-        alert('Please fill out the Home Team, Away Team, and Kick-off Time at the top of the form.');
-        return;
-    }
-
-    const id = getVal('f_id');
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-
-    const payload = {
-        homeTeam: homeTeam,
-        awayTeam: awayTeam,
-        homeLogo: getVal('f_homeLogo'),
-        awayLogo: getVal('f_awayLogo'),
-        description: getVal('f_description'),
-        kickoffUtc: new Date(kickoffVal).toISOString(),
-        status: getVal('f_status') || 'LIVE',
-        homeScore: getVal('f_homeScore'),
-        awayScore: getVal('f_awayScore'),
-        streamUrl: getVal('f_streamUrl'),
-        backupStreams: getVal('f_backupStreams'),
-        extStream1: getVal('f_ext1'),
-        extStream2: getVal('f_ext2'),
-        extStream3: getVal('f_ext3'),
-        posterUrl: getVal('f_posterUrl'),
-        featured: getChecked('f_featured'),
-        visible: getChecked('f_visible'),
-        leagueId: getVal('f_leagueId') ? parseInt(getVal('f_leagueId')) : null
-    };
-
-    const url = id ? `/api/admin/matches/${id}` : '/api/admin/matches';
-    const method = id ? 'PUT' : 'POST';
-
-    try {
-        const res = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-            alert('Match saved successfully!');
-            if (typeof loadMatches === 'function') loadMatches();
-        } else {
-            const errData = await res.json().catch(() => ({ message: res.statusText }));
-            alert('Error saving match: ' + (errData.message || 'Server returned HTTP ' + res.status));
-        }
-    } catch (err) {
-        console.error('Save error:', err);
-        alert('Network connection error when reaching server.');
-    }
-}
 
 /* ---------- catalogue ---------- */
 function renderSelects(){
