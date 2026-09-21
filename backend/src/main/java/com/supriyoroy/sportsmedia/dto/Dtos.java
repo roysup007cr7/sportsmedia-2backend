@@ -22,7 +22,20 @@ public final class Dtos {
     public record LeagueView(Long id, String name, String slug, String country,
                              String logoUrl, String sportSlug) {}
 
-    public record MatchView(
+//     public record MatchView(
+//             Long id, String homeTeam, String awayTeam, String homeLogo, String awayLogo,
+//             String description, Instant kickoffUtc, String status,
+//             String homeScore, String awayScore, String posterUrl,
+//             boolean featured, long views,
+//             String leagueName, String leagueSlug, String leagueLogo,
+//             String sportName, String sportSlug,
+//             /** Only filled when the match is actually live — otherwise null. */
+//             String streamUrl,
+//             List<StreamOption> extraStreams,
+//             String shareUrl
+//     ) {}
+
+public record MatchView(
             Long id, String homeTeam, String awayTeam, String homeLogo, String awayLogo,
             String description, Instant kickoffUtc, String status,
             String homeScore, String awayScore, String posterUrl,
@@ -32,7 +45,10 @@ public final class Dtos {
             /** Only filled when the match is actually live — otherwise null. */
             String streamUrl,
             List<StreamOption> extraStreams,
-            String shareUrl
+            String shareUrl,
+            String extStream1,
+            String extStream2,
+            String extStream3
     ) {}
 
     public record StreamOption(String label, String url) {}
@@ -57,9 +73,6 @@ public final class Dtos {
             Instant serverTime
     ) {}
 
-public String extStream1;
-public String extStream2;
-public String extStream3;
 
     // ---------- public writes ----------
     public record CommentRequest(@NotBlank @Size(max = 60) String author,
@@ -77,13 +90,23 @@ public String extStream3;
                                         String currency, String upiDeepLink, String note) {}
 
     // ---------- admin writes ----------
-    public record MatchRequest(
+//     public record MatchRequest(
+//             @NotBlank String homeTeam, @NotBlank String awayTeam,
+//             String homeLogo, String awayLogo, String description,
+//             @NotNull Instant kickoffUtc, String status,
+//             String homeScore, String awayScore,
+//             String streamUrl, String backupStreams, String posterUrl,
+//             Boolean featured, Boolean visible, Long leagueId
+//     ) {}
+
+public record MatchRequest(
             @NotBlank String homeTeam, @NotBlank String awayTeam,
             String homeLogo, String awayLogo, String description,
             @NotNull Instant kickoffUtc, String status,
             String homeScore, String awayScore,
             String streamUrl, String backupStreams, String posterUrl,
-            Boolean featured, Boolean visible, Long leagueId
+            Boolean featured, Boolean visible, Long leagueId,
+            String extStream1, String extStream2, String extStream3
     ) {}
 
     public record LeagueRequest(@NotBlank String name, String slug, String country,
