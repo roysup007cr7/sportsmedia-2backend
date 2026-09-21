@@ -474,26 +474,61 @@ function toLocalInput(iso){
   const d = new Date(iso), p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-function editMatch(id){
-  const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
-  document.getElementById('addTitle').textContent = 'Edit match';
-  const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
-  v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
-  v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
-  v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
-  v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
-  v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
-v('f_ext1', m.extStream1 || m.ext_stream1);
-v('f_ext2', m.extStream2 || m.ext_stream2);
-v('f_ext3', m.extStream3 || m.ext_stream3);
-  document.getElementById('f_featured').checked = !!m.featured;
-  document.getElementById('f_visible').checked = m.visible !== false;
-  if(m.league) document.getElementById('f_league').value = m.league.id;
-  document.querySelector('[data-tab="add"]').click();
-  window.scrollTo({top:0,behavior:'smooth'});
+// function editMatch(id){
+//   const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
+//   document.getElementById('addTitle').textContent = 'Edit match';
+//   const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
+//   v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
+//   v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
+//   v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
+//   v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
+//   v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
+// v('f_ext1', m.extStream1 || m.ext_stream1);
+// v('f_ext2', m.extStream2 || m.ext_stream2);
+// v('f_ext3', m.extStream3 || m.ext_stream3);
+//   document.getElementById('f_featured').checked = !!m.featured;
+//   document.getElementById('f_visible').checked = m.visible !== false;
+//   if(m.league) document.getElementById('f_league').value = m.league.id;
+//   document.querySelector('[data-tab="add"]').click();
+//   window.scrollTo({top:0,behavior:'smooth'});
+// }
+
+function editMatch(m) {
+    document.getElementById('f_id').value = m.id || '';
+    document.getElementById('f_homeTeam').value = m.homeTeam || '';
+    document.getElementById('f_awayTeam').value = m.awayTeam || '';
+    document.getElementById('f_homeLogo').value = m.homeLogo || '';
+    document.getElementById('f_awayLogo').value = m.awayLogo || '';
+    
+    // Format Kick-off for datetime-local input
+    if (m.kickoffUtc) {
+        const d = new Date(m.kickoffUtc);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('f_kickoff').value = d.toISOString().slice(0, 16);
+    } else {
+        document.getElementById('f_kickoff').value = '';
+    }
+
+    document.getElementById('f_leagueId').value = m.league ? m.league.id : '';
+    document.getElementById('f_status').value = m.status || 'UPCOMING';
+    document.getElementById('f_homeScore').value = m.homeScore || '';
+    document.getElementById('f_awayScore').value = m.awayScore || '';
+    document.getElementById('f_description').value = m.description || '';
+    document.getElementById('f_streamUrl').value = m.streamUrl || '';
+    
+    // External Stream URLs
+    if (document.getElementById('f_ext1')) document.getElementById('f_ext1').value = m.extStream1 || '';
+    if (document.getElementById('f_ext2')) document.getElementById('f_ext2').value = m.extStream2 || '';
+    if (document.getElementById('f_ext3')) document.getElementById('f_ext3').value = m.extStream3 || '';
+    
+    document.getElementById('f_backupStreams').value = m.backupStreams || '';
+    document.getElementById('f_posterUrl').value = m.posterUrl || '';
+    document.getElementById('f_featured').checked = !!m.featured;
+    document.getElementById('f_visible').checked = m.visible !== false;
+
+    // Scroll to top of the form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-
 
 
 document.getElementById('clearForm').addEventListener('click', ()=>{
