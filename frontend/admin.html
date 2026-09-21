@@ -161,11 +161,9 @@ tr:hover td{background:color-mix(in srgb,var(--pitch-2) 60%,transparent)}
         <label class="field"><span>Main stream link (iframe or HLS URL)</span><input id="f_stream" placeholder="https://…"></label>
 
 <!-- ADD THESE 3 EXTERNAL STREAM LINK FIELDS -->
-<div class="grid2">
-  <label class="field"><span>External Stream Spot 1 (Redirect URL)</span><input id="f_ext1" placeholder="https://external-site-1.com/live"></label>
-  <label class="field"><span>External Stream Spot 2 (Redirect URL)</span><input id="f_ext2" placeholder="https://external-site-2.com/live"></label>
-</div>
-<label class="field"><span>External Stream Spot 3 (Redirect URL)</span><input id="f_ext3" placeholder="https://external-site-3.com/live"></label>
+<input type="text" id="f_ext1" class="form-control" placeholder="https://..." />
+<input type="text" id="f_ext2" class="form-control" placeholder="https://..." />
+<input type="text" id="f_ext3" class="form-control" placeholder="https://..." />
         <label class="field"><span>Extra servers — one per line, as <code>Label|URL</code></span>
           <textarea id="f_backup" rows="3" placeholder="Hindi commentary|https://…"></textarea></label>
         <label class="field"><span>Poster image URL</span><input id="f_poster"></label>
@@ -173,7 +171,8 @@ tr:hover td{background:color-mix(in srgb,var(--pitch-2) 60%,transparent)}
           <label><input type="checkbox" id="f_featured"> Feature on the home banner</label>
           <label><input type="checkbox" id="f_visible" checked> Visible on the site</label>
         </div>
-        <button class="btn primary" id="saveMatch">Save match</button>
+        <!-- <button class="btn primary" id="saveMatch">Save match</button> -->
+         <button type="button" class="btn btn-primary" onclick="saveMatch()">Save match</button>
         <button class="btn" id="clearForm">Clear form</button>
         <input type="hidden" id="f_id">
       </div>
@@ -528,32 +527,48 @@ document.getElementById('clearForm').addEventListener('click', ()=>{
 //   }catch(e){ toast(e.message); }
 // });
 async function saveMatch() {
-    const id = document.getElementById('f_id') ? document.getElementById('f_id').value : '';
-    
-    // Check if external stream elements exist before getting values
-    const ext1 = document.getElementById('f_ext1') ? document.getElementById('f_ext1').value : '';
-    const ext2 = document.getElementById('f_ext2') ? document.getElementById('f_ext2').value : '';
-    const ext3 = document.getElementById('f_ext3') ? document.getElementById('f_ext3').value : '';
+    // Safe helper functions so null elements don't crash execution
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    };
+
+    const getChecked = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.checked : false;
+    };
+
+    const homeTeam = getVal('f_homeTeam').trim();
+    const awayTeam = getVal('f_awayTeam').trim();
+    const kickoffVal = getVal('f_kickoff');
+
+    if (!homeTeam || !awayTeam || !kickoffVal) {
+        alert('Please fill out the Home Team, Away Team, and Kick-off Time at the top of the form.');
+        return;
+    }
+
+    const id = getVal('f_id');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
 
     const payload = {
-        homeTeam: document.getElementById('f_homeTeam').value,
-        awayTeam: document.getElementById('f_awayTeam').value,
-        homeLogo: document.getElementById('f_homeLogo').value,
-        awayLogo: document.getElementById('f_awayLogo').value,
-        description: document.getElementById('f_description').value,
-        kickoffUtc: new Date(document.getElementById('f_kickoff').value).toISOString(),
-        status: document.getElementById('f_status').value,
-        homeScore: document.getElementById('f_homeScore').value,
-        awayScore: document.getElementById('f_awayScore').value,
-        streamUrl: document.getElementById('f_streamUrl').value,
-        backupStreams: document.getElementById('f_backupStreams').value,
-        extStream1: ext1,
-        extStream2: ext2,
-        extStream3: ext3,
-        posterUrl: document.getElementById('f_posterUrl').value,
-        featured: document.getElementById('f_featured').checked,
-        visible: document.getElementById('f_visible').checked,
-        leagueId: document.getElementById('f_leagueId').value ? parseInt(document.getElementById('f_leagueId').value) : null
+        homeTeam: homeTeam,
+        awayTeam: awayTeam,
+        homeLogo: getVal('f_homeLogo'),
+        awayLogo: getVal('f_awayLogo'),
+        description: getVal('f_description'),
+        kickoffUtc: new Date(kickoffVal).toISOString(),
+        status: getVal('f_status') || 'LIVE',
+        homeScore: getVal('f_homeScore'),
+        awayScore: getVal('f_awayScore'),
+        streamUrl: getVal('f_streamUrl'),
+        backupStreams: getVal('f_backupStreams'),
+        extStream1: getVal('f_ext1'),
+        extStream2: getVal('f_ext2'),
+        extStream3: getVal('f_ext3'),
+        posterUrl: getVal('f_posterUrl'),
+        featured: getChecked('f_featured'),
+        visible: getChecked('f_visible'),
+        leagueId: getVal('f_leagueId') ? parseInt(getVal('f_leagueId')) : null
     };
 
     const url = id ? `/api/admin/matches/${id}` : '/api/admin/matches';
@@ -571,17 +586,16 @@ async function saveMatch() {
 
         if (res.ok) {
             alert('Match saved successfully!');
-            loadMatches();
+            if (typeof loadMatches === 'function') loadMatches();
         } else {
-            const errData = await res.json();
-            alert('Error saving match: ' + (errData.message || res.statusText));
+            const errData = await res.json().catch(() => ({ message: res.statusText }));
+            alert('Error saving match: ' + (errData.message || 'Server returned HTTP ' + res.status));
         }
     } catch (err) {
-        console.error('Fetch error:', err);
-        alert('Failed to connect to server.');
+        console.error('Save error:', err);
+        alert('Network connection error when reaching server.');
     }
 }
-
 
 /* ---------- catalogue ---------- */
 function renderSelects(){
