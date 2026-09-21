@@ -491,26 +491,7 @@ function editMatch(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// function editMatch(id){
-//   const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
-//   document.getElementById('addTitle').textContent = 'Edit match';
-//   const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
-//   v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
-//   v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
-//   v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
-//   v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
-//   v('f_stream',m.streamUrl);
-  
-//   // External stream redirect inputs
-//   v('f_ext1',m.extStream1); v('f_ext2',m.extStream2); v('f_ext3',m.extStream3);
-  
-//   v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
-//   document.getElementById('f_featured').checked = !!m.featured;
-//   document.getElementById('f_visible').checked = m.visible !== false;
-//   if(m.league) document.getElementById('f_league').value = m.league.id;
-//   document.querySelector('[data-tab="add"]').click();
-//   window.scrollTo({top:0,behavior:'smooth'});
-// }
+
 
 
 document.getElementById('clearForm').addEventListener('click', ()=>{
@@ -539,38 +520,7 @@ document.getElementById('saveMatch').addEventListener('click', async ()=>{
   }catch(e){ toast(e.message); }
 });
 
-// document.getElementById('saveMatch').addEventListener('click', async ()=>{
-//   const g = i => document.getElementById(i).value.trim();
-//   if(!g('f_home')||!g('f_away')||!g('f_kick')){ toast('Teams and kick-off time are needed'); return; }
-//   const payload = {
-//     homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
-//     description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
-//     homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
-//     streamUrl:g('f_stream'),
-//     extStream1:g('f_ext1'), extStream2:g('f_ext2'), extStream3:g('f_ext3'),
-//     backupStreams:g('f_backup'), posterUrl:g('f_poster'),
-//     featured:document.getElementById('f_featured').checked,
-//     visible:document.getElementById('f_visible').checked,
-//     leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null
-//   };
-//   const id = document.getElementById('f_id').value;
-//   try{
-//     await call('/admin/matches'+(id?'/'+id:''), {method:id?'PUT':'POST', body:JSON.stringify(payload)});
-//     toast(id?'Match updated':'Match added');
-//     document.getElementById('clearForm').click(); loadAll();
-//   }catch(e){ toast(e.message); }
-// });
-// // saveMatch function-er thik niche eta thakbe:
-// document.getElementById('clearForm').addEventListener('click', () => {
-//   ['f_id','f_home','f_away','f_homeLogo','f_awayLogo','f_kick','f_hs','f_as','f_desc','f_stream','f_ext1','f_ext2','f_ext3','f_backup','f_poster'].forEach(id => {
-//     const el = document.getElementById(id);
-//     if (el) el.value = '';
-//   });
-//   document.getElementById('addTitle').textContent = 'Add match';
-//   document.getElementById('f_status').value = 'UPCOMING';
-//   document.getElementById('f_featured').checked = false;
-//   document.getElementById('f_visible').checked = true;
-// });
+
 
 /* ---------- catalogue ---------- */
 function renderSelects(){
