@@ -793,7 +793,7 @@ async function openMatch(id){
     ? `<div class="share" style="margin-top:12px">${backups.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url \vert{}\vert{} s.streamUrl \vert{}\vert{} s)}">${esc(s.label || s.name || ('Server '+(i+2)))}</button>`).join('')}</div>` : '';
 
-  // Helper function to format external redirect links
+  // External redirect links helper
   const fixUrl = u => {
     if (!u) return '';
     u = String(u).trim();
