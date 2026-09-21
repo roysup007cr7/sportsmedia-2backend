@@ -761,11 +761,26 @@ async function openMatch(id){
   renderAds();
   loadComments(m.id, 'mcList');
   document.getElementById('mcSend').addEventListener('click', ()=>postComment('mcName','mcBody',m.id,'mcList'));
-  document.querySelectorAll('[data-server]').forEach(b=>b.addEventListener('click',()=>{
-    document.querySelector('#mBody .player').innerHTML =
-      `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
-  }));
-}
+//   document.querySelectorAll('[data-server]').forEach(b=>b.addEventListener('click',()=>{
+//     document.querySelector('#mBody .player').innerHTML =
+//       `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
+//   }));
+// }
+document.querySelectorAll('[data-server]').forEach(b => {
+    b.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = b.dataset.server || b.getAttribute('data-url');
+        if (!url || url === '#') return;
+
+        // If it is an external link, open in a new tab; otherwise, embed iframe
+        if (url.startsWith('http') && !url.includes('.m3u8') && !url.includes('embed')) {
+            window.open(url, '_blank');
+        } else {
+            document.querySelector('#mBody .player').innerHTML = 
+                `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
+        }
+    });
+});
 
 
 // async function openMatch(id){
