@@ -54,6 +54,25 @@ public class MatchEntity {
     private Boolean visible = true;
     private Long views = 0L;
 
+@Column(name = "ext_stream1")
+private String extStream1;
+
+@Column(name = "ext_stream2")
+private String extStream2;
+
+@Column(name = "ext_stream3")
+private String extStream3;
+
+// Add Getters and Setters for all 3 fields below
+public String getExtStream1() { return extStream1; }
+public void setExtStream1(String extStream1) { this.extStream1 = extStream1; }
+
+public String getExtStream2() { return extStream2; }
+public void setExtStream2(String extStream2) { this.extStream2 = extStream2; }
+
+public String getExtStream3() { return extStream3; }
+public void setExtStream3(String extStream3) { this.extStream3 = extStream3; }
+
     /** Set when the fixture came from the schedule API, so a re-sync updates instead of duplicating. */
     @Column(unique = true)
     private String externalId;

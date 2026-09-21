@@ -703,9 +703,6 @@ function findMatch(id){
   return [...(DATA.live||[]),...(DATA.upcoming||[]),...(DATA.finished||[]),...(DATA.featured||[])]
     .find(m => String(m.id)===String(id));
 }
-
-
-
 async function openMatch(id){
   let m = findMatch(id);
   try{ m = await api('/public/matches/'+id); }catch(e){}
@@ -723,10 +720,29 @@ async function openMatch(id){
     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
 
+  // Ensure URLs format properly or default to '#'
+  const fixUrl = u => (u && /^https?:\/\//i.test(String(u).trim())) ? String(u).trim() : (u ? 'https://' + String(u).trim() : '#');
+
+  const ext1 = fixUrl(m.extStream1 || m.ext_stream1);
+  const ext2 = fixUrl(m.extStream2 || m.ext_stream2);
+  const ext3 = fixUrl(m.extStream3 || m.ext_stream3);
+
+  // Always displays 3 server buttons
+  const externalLinksHTML = `
+    <div style="margin-top:14px; padding:12px; background:var(--pitch); border:1px solid var(--line); border-radius:var(--radius-s);">
+      <div style="font-weight:600; font-size:.88rem; margin-bottom:8px; color:var(--flood);">🔗 Watch on External Sites</div>
+      <div class="share">
+        <a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Server 1 ↗</a>
+        <a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Server 2 ↗</a>
+        <a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Server 3 ↗</a>
+      </div>
+    </div>`;
+
   document.getElementById('mBody').innerHTML = `
     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
     ${player}
     ${servers}
+    ${externalLinksHTML}
     <div class="meta" style="display:flex;justify-content:space-between;margin:14px 0;color:var(--muted);font-size:.88rem">
       <span>${badge(m.status)} ${esc(m.leagueName||'')}</span>
       <span>${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)} (${TZ})</span>
@@ -750,6 +766,52 @@ async function openMatch(id){
       `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
   }));
 }
+
+
+// async function openMatch(id){
+//   let m = findMatch(id);
+//   try{ m = await api('/public/matches/'+id); }catch(e){}
+//   if(!m) return;
+//   document.getElementById('mTitle').textContent = `${m.homeTeam} vs ${m.awayTeam}`;
+//   const live = m.status==='LIVE';
+//   const player = live && m.streamUrl
+//     ? `<div class="player"><iframe src="${esc(m.streamUrl)}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe></div>`
+//     : `<div class="player"><div class="hold">${live
+//         ? 'The stream link for this match has not been added yet. Try the refresh button in a minute.'
+//         : m.status==='FINISHED' ? 'This match has finished.' :
+//           `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} ·${countdown(m.kickoffUtc)}`}</div></div>`;
+
+//   const servers = (m.extraStreams||[]).length
+//     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
+//         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
+
+//   document.getElementById('mBody').innerHTML = `
+//     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
+//     ${player}
+//     ${servers}
+//     <div class="meta" style="display:flex;justify-content:space-between;margin:14px 0;color:var(--muted);font-size:.88rem">
+//       <span>${badge(m.status)} ${esc(m.leagueName||'')}</span>
+//       <span>${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)} (${TZ})</span>
+//     </div>
+//     <p style="color:var(--muted);margin:0 0 14px">${esc(m.description||'')}</p>
+//     <h3 style="margin-bottom:8px">Share this match</h3>
+//     ${shareHTML(m)}
+//     <div class="ad" id="ad-below-player" data-label="Ad space · below player"></div>
+//     <h3 style="margin:18px 0 8px">Comments on this match</h3>
+//     <label class="field"><span>Your name</span><input id="mcName" maxlength="60"></label>
+//     <label class="field"><span>Your opinion</span><textarea id="mcBody" rows="2"></textarea></label>
+//     <button class="btn primary sm" id="mcSend" data-match="${m.id}">Post comment</button>
+//     <div id="mcList" style="margin-top:14px"></div>`;
+
+//   openOverlay('matchModal');
+//   renderAds();
+//   loadComments(m.id, 'mcList');
+//   document.getElementById('mcSend').addEventListener('click', ()=>postComment('mcName','mcBody',m.id,'mcList'));
+//   document.querySelectorAll('[data-server]').forEach(b=>b.addEventListener('click',()=>{
+//     document.querySelector('#mBody .player').innerHTML =
+//       `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
+//   }));
+// }
 
 function siteUrl(id){ return location.origin + location.pathname + '#match-' + id; }
 

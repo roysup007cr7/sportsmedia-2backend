@@ -484,6 +484,9 @@ function editMatch(id){
   v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
   v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
   v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
+v('f_ext1', m.extStream1 || m.ext_stream1);
+v('f_ext2', m.extStream2 || m.ext_stream2);
+v('f_ext3', m.extStream3 || m.ext_stream3);
   document.getElementById('f_featured').checked = !!m.featured;
   document.getElementById('f_visible').checked = m.visible !== false;
   if(m.league) document.getElementById('f_league').value = m.league.id;
@@ -507,7 +510,12 @@ document.getElementById('saveMatch').addEventListener('click', async ()=>{
     homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
     description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
     homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
-    streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+    // Line 510 in your screenshot:
+streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+extStream1:g('f_ext1'),
+extStream2:g('f_ext2'),
+extStream3:g('f_ext3'),
+    // streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
     featured:document.getElementById('f_featured').checked,
     visible:document.getElementById('f_visible').checked,
     leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null

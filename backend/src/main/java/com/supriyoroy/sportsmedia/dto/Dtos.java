@@ -57,6 +57,10 @@ public final class Dtos {
             Instant serverTime
     ) {}
 
+public String extStream1;
+public String extStream2;
+public String extStream3;
+
     // ---------- public writes ----------
     public record CommentRequest(@NotBlank @Size(max = 60) String author,
                                  @NotBlank @Size(max = 1500) String body,
