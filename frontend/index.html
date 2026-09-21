@@ -723,18 +723,25 @@ async function openMatch(id){
     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
 
-  // Parse external redirect stream links
-  const ext1 = m.extStream1 || '#';
-  const ext2 = m.extStream2 || '#';
-  const ext3 = m.extStream3 || '#';
+  // Helper function to format external redirect links
+  const fixUrl = u => {
+    if (!u) return '';
+    u = String(u).trim();
+    if (!u || u === '#') return '';
+    return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+  };
+
+  const ext1 = fixUrl(m.extStream1);
+  const ext2 = fixUrl(m.extStream2);
+  const ext3 = fixUrl(m.extStream3);
 
   const externalStreamSpots = `
     <div style="margin-top:16px; padding:12px; background:var(--pitch); border:1px solid var(--line); border-radius:var(--radius-s);">
       <div style="font-weight:600; font-size:.88rem; margin-bottom:8px; color:var(--flood);">🔗 External Streaming Links (Redirect)</div>
       <div class="share">
-        ${ext1 !== '#' ? `<a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Stream 1 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 1 (Offline)</span>`}
-        ${ext2 !== '#' ? `<a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Stream 2 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 2 (Offline)</span>`}
-        ${ext3 !== '#' ? `<a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Stream 3 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 3 (Offline)</span>`}
+        ${ext1 ? `<a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Stream 1 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 1 (Offline)</span>`}
+        ${ext2 ? `<a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Stream 2 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 2 (Offline)</span>`}
+        ${ext3 ? `<a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Stream 3 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 3 (Offline)</span>`}
       </div>
     </div>`;
 
