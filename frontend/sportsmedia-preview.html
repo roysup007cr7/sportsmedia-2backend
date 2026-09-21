@@ -254,7 +254,7 @@ footer a:hover{color:var(--flood)}
      Put your backend address here (no trailing slash after /api).
      Leave it as-is while developing on your own machine.
      ============================================================ -->
-<script>window.SM_API = "http://localhost:8080/api";</script>
+<script>window.SM_API = "https://sportsmedia-api.onrender.com/api";</script>
 </head>
 <body>
 
@@ -407,7 +407,7 @@ footer a:hover{color:var(--flood)}
     <div class="switch"><div><b>Auto refresh</b><small>Reload scores every 60 seconds</small></div>
       <input type="checkbox" id="setAuto" checked></div>
     <label class="field" style="margin-top:16px"><span>Backend address</span>
-      <input id="setApi" placeholder="http://localhost:8080/api"></label>
+      <input id="setApi" placeholder="https://sportsmedia-api.onrender.com/api"></label>
     <button class="btn primary" id="saveSettings">Save settings</button>
     <p style="color:var(--muted);font-size:.82rem">Your time zone is detected from this device: <b id="tzOut"></b></p>
   </div>
@@ -445,7 +445,7 @@ const store = {
 };
 
 const cfg = {
-  api: store.get('api', window.SM_API || 'http://localhost:8080/api'),
+  api: store.get('api', window.SM_API || 'https://sportsmedia-api.onrender.com/api'),
   theme: store.get('theme','dark'),
   clock: store.get('clock','12'),
   countdown: store.get('countdown',true),

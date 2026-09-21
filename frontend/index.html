@@ -249,12 +249,7 @@ footer a:hover{color:var(--flood)}
 }
 @media (max-width:520px){.fgrid{grid-template-columns:1fr}.score{font-size:2.5rem}}
 </style>
-<!-- ============================================================
-     THE ONE LINE YOU EDIT AFTER DEPLOYING
-     Put your backend address here (no trailing slash after /api).
-     Leave it as-is while developing on your own machine.
-     ============================================================ -->
-<script>window.SM_API = "http://localhost:8080/api";</script>
+<script>window.SM_API = "https://sportsmedia-api.onrender.com/api";</script>
 </head>
 <body>
 
@@ -407,7 +402,7 @@ footer a:hover{color:var(--flood)}
     <div class="switch"><div><b>Auto refresh</b><small>Reload scores every 60 seconds</small></div>
       <input type="checkbox" id="setAuto" checked></div>
     <label class="field" style="margin-top:16px"><span>Backend address</span>
-      <input id="setApi" placeholder="http://localhost:8080/api"></label>
+      <input id="setApi" placeholder="https://sportsmedia-api.onrender.com/api"></label>
     <button class="btn primary" id="saveSettings">Save settings</button>
     <p style="color:var(--muted);font-size:.82rem">Your time zone is detected from this device: <b id="tzOut"></b></p>
   </div>
@@ -433,19 +428,13 @@ footer a:hover{color:var(--flood)}
 <div class="toast" id="toast"></div>
 
 <script>
-/* =======================================================================
-   Sports Media — front end
-   Talks to the Spring Boot API. If the API is unreachable it falls back to
-   demo fixtures so the page is never blank.
-   ======================================================================= */
-
 const store = {
   get(k, d){ try{ const v = localStorage.getItem('sm.'+k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
   set(k, v){ try{ localStorage.setItem('sm.'+k, JSON.stringify(v)); }catch(e){} }
 };
 
 const cfg = {
-  api: store.get('api', window.SM_API || 'http://localhost:8080/api'),
+  api: store.get('api', window.SM_API || 'https://sportsmedia-api.onrender.com/api'),
   theme: store.get('theme','dark'),
   clock: store.get('clock','12'),
   countdown: store.get('countdown',true),
@@ -580,7 +569,7 @@ function renderHero(){
         ${live || m.status==='FINISHED'
           ? `<div class="score">${esc(m.homeScore??'0')} <span style="color:var(--muted)">:</span> ${esc(m.awayScore??'0')}</div>`
           : `<div class="kick">${fmtTime(m.kickoffUtc)}</div>`}
-        <small>${live?'Second half under way':`${fmtDay(m.kickoffUtc)} · ${TZ}`}</small>
+        <small>${live?'Second half under way':`${fmtDay(m.kickoffUtc)} ·${TZ}`}</small>
       </div>
       <div class="side">${crest(m.awayLogo)}<span class="tname">${esc(m.awayTeam)}</span></div>
     </div>
@@ -650,7 +639,7 @@ function renderAds(){
     if(slot && a.code){ slot.innerHTML = a.code; slot.classList.add('filled'); activateScripts(slot); }
   });
 }
-/* Ad networks ship <script> tags; innerHTML alone won't run them. */
+
 function activateScripts(container){
   container.querySelectorAll('script').forEach(old=>{
     const s = document.createElement('script');
@@ -701,7 +690,6 @@ function renderPages(s){
   document.getElementById('ctSend') && document.getElementById('ctSend').addEventListener('click', sendContact);
 }
 
-/* countdown ticker */
 function tickCountdowns(){
   timers.forEach(clearInterval); timers = [];
   timers.push(setInterval(()=>{
@@ -711,11 +699,11 @@ function tickCountdowns(){
   }, 30000));
 }
 
-/* ---------- match modal ---------- */
 function findMatch(id){
   return [...(DATA.live||[]),...(DATA.upcoming||[]),...(DATA.finished||[]),...(DATA.featured||[])]
     .find(m => String(m.id)===String(id));
 }
+
 
 async function openMatch(id){
   let m = findMatch(id);
@@ -728,16 +716,33 @@ async function openMatch(id){
     : `<div class="player"><div class="hold">${live
         ? 'The stream link for this match has not been added yet. Try the refresh button in a minute.'
         : m.status==='FINISHED' ? 'This match has finished.' :
-          `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} · ${countdown(m.kickoffUtc)}`}</div></div>`;
+          `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} ·${countdown(m.kickoffUtc)}`}</div></div>`;
 
+  // Internal iframe server switches
   const servers = (m.extraStreams||[]).length
     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
+
+  // Parse external redirect stream links
+  const ext1 = m.extStream1 || '#';
+  const ext2 = m.extStream2 || '#';
+  const ext3 = m.extStream3 || '#';
+
+  const externalStreamSpots = `
+    <div style="margin-top:16px; padding:12px; background:var(--pitch); border:1px solid var(--line); border-radius:var(--radius-s);">
+      <div style="font-weight:600; font-size:.88rem; margin-bottom:8px; color:var(--flood);">🔗 External Streaming Links (Redirect)</div>
+      <div class="share">
+        ${ext1 !== '#' ? `<a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Stream 1 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 1 (Offline)</span>`}
+        ${ext2 !== '#' ? `<a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Stream 2 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 2 (Offline)</span>`}
+        ${ext3 !== '#' ? `<a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Stream 3 ↗</a>` : `<span class="btn sm disabled" style="opacity:0.5; cursor:not-allowed;">Stream 3 (Offline)</span>`}
+      </div>
+    </div>`;
 
   document.getElementById('mBody').innerHTML = `
     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
     ${player}
     ${servers}
+    ${externalStreamSpots}
     <div class="meta" style="display:flex;justify-content:space-between;margin:14px 0;color:var(--muted);font-size:.88rem">
       <span>${badge(m.status)} ${esc(m.leagueName||'')}</span>
       <span>${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)} (${TZ})</span>
@@ -762,6 +767,51 @@ async function openMatch(id){
   }));
 }
 
+// async function openMatch(id){
+//   let m = findMatch(id);
+//   try{ m = await api('/public/matches/'+id); }catch(e){}
+//   if(!m) return;
+//   document.getElementById('mTitle').textContent = `${m.homeTeam} vs ${m.awayTeam}`;
+//   const live = m.status==='LIVE';
+//   const player = live && m.streamUrl
+//     ? `<div class="player"><iframe src="${esc(m.streamUrl)}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe></div>`
+//     : `<div class="player"><div class="hold">${live
+//         ? 'The stream link for this match has not been added yet. Try the refresh button in a minute.'
+//         : m.status==='FINISHED' ? 'This match has finished.' :
+//           `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} ·${countdown(m.kickoffUtc)}`}</div></div>`;
+
+//   const servers = (m.extraStreams||[]).length
+//     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
+//         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
+
+//   document.getElementById('mBody').innerHTML = `
+//     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
+//     ${player}
+//     ${servers}
+//     <div class="meta" style="display:flex;justify-content:space-between;margin:14px 0;color:var(--muted);font-size:.88rem">
+//       <span>${badge(m.status)} ${esc(m.leagueName||'')}</span>
+//       <span>${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)} (${TZ})</span>
+//     </div>
+//     <p style="color:var(--muted);margin:0 0 14px">${esc(m.description||'')}</p>
+//     <h3 style="margin-bottom:8px">Share this match</h3>
+//     ${shareHTML(m)}
+//     <div class="ad" id="ad-below-player" data-label="Ad space · below player"></div>
+//     <h3 style="margin:18px 0 8px">Comments on this match</h3>
+//     <label class="field"><span>Your name</span><input id="mcName" maxlength="60"></label>
+//     <label class="field"><span>Your opinion</span><textarea id="mcBody" rows="2"></textarea></label>
+//     <button class="btn primary sm" id="mcSend" data-match="${m.id}">Post comment</button>
+//     <div id="mcList" style="margin-top:14px"></div>`;
+
+//   openOverlay('matchModal');
+//   renderAds();
+//   loadComments(m.id, 'mcList');
+//   document.getElementById('mcSend').addEventListener('click', ()=>postComment('mcName','mcBody',m.id,'mcList'));
+//   document.querySelectorAll('[data-server]').forEach(b=>b.addEventListener('click',()=>{
+//     document.querySelector('#mBody .player').innerHTML =
+//       `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
+//   }));
+// }
+
 function siteUrl(id){ return location.origin + location.pathname + '#match-' + id; }
 
 function shareHTML(m){
@@ -774,7 +824,7 @@ function shareHTML(m){
     <a href="https://twitter.com/intent/tweet?url=${u}&text=${t}" target="_blank" rel="noopener">X</a>
     <a href="https://www.facebook.com/sharer/sharer.php?u=${u}" target="_blank" rel="noopener">Facebook</a>
     <button data-copy="${esc(url)}">Copy link</button>
-    ${navigator.share ? `<button data-native="${esc(url)}|${esc(text)}">More…</button>` : ''}
+    ${navigator.share ? `<button data-native="${esc(url)}\vert{}${esc(text)}">More…</button>` : ''}
   </div>`;
 }
 
@@ -788,7 +838,6 @@ function shareMatch(id){
   openOverlay('matchModal');
 }
 
-/* ---------- comments ---------- */
 async function loadComments(matchId, targetId){
   const target = document.getElementById(targetId || 'commentList');
   if(!target) return;
@@ -829,7 +878,6 @@ async function sendContact(){
   }catch(e){ toast('Backend not connected — message not sent'); }
 }
 
-/* ---------- search ---------- */
 let searchTimer;
 async function runSearch(q){
   const box = document.getElementById('searchResults');
@@ -848,7 +896,6 @@ async function runSearch(q){
     : `<div class="sr" style="color:var(--muted)">Nothing matched “${esc(q)}”. Try a team or league name.</div>`;
 }
 
-/* ---------- overlays ---------- */
 function openOverlay(id){
   document.getElementById('scrim').classList.add('open');
   document.getElementById(id).classList.add('open');
@@ -866,7 +913,6 @@ function toast(msg){
   clearTimeout(t._t); t._t = setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-/* ---------- routing ---------- */
 const PAGES = ['about','contact','privacy','disclaimer'];
 function route(){
   const hash = (location.hash||'#home').slice(1);
@@ -887,7 +933,6 @@ function route(){
   if(hash.startsWith('match-')) openMatch(hash.replace('match-',''));
 }
 
-/* ---------- settings ---------- */
 function applySettings(){
   document.documentElement.setAttribute('data-theme', cfg.theme);
   document.getElementById('setTheme').value = cfg.theme;
@@ -898,7 +943,6 @@ function applySettings(){
   document.getElementById('setApi').value = cfg.api;
 }
 
-/* ---------- join popup ---------- */
 function setupPopup(){
   const s = (DATA && DATA.settings) || {};
   if(!cfg.popup || s['popup.enabled']==='false') return;
@@ -914,7 +958,6 @@ function setupPopup(){
     (parseInt(s['popup.delaySeconds'])||4)*1000);
 }
 
-/* ---------- wiring ---------- */
 document.addEventListener('click', e=>{
   const open = e.target.closest('[data-open]');
   if(open){ openMatch(open.dataset.open); return; }
@@ -969,7 +1012,6 @@ document.addEventListener('keydown', e=>{
 });
 window.addEventListener('hashchange', route);
 
-/* ---------- boot ---------- */
 (async function(){
   applySettings();
   await load(true);
