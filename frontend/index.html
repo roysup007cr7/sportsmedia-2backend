@@ -720,23 +720,24 @@ async function openMatch(id){
     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
 
-  // Ensure URLs format properly or default to '#'
-  const fixUrl = u => (u && /^https?:\/\//i.test(String(u).trim())) ? String(u).trim() : (u ? 'https://' + String(u).trim() : '#');
+  // Helper to safely format valid URLs or hide broken ones
+  const fixUrl = u => (u && /^https?:\/\//i.test(String(u).trim())) ? String(u).trim() : (u ? 'https://' + String(u).trim() : null);
 
   const ext1 = fixUrl(m.extStream1 || m.ext_stream1);
   const ext2 = fixUrl(m.extStream2 || m.ext_stream2);
   const ext3 = fixUrl(m.extStream3 || m.ext_stream3);
 
-  // Always displays 3 server buttons
-  const externalLinksHTML = `
+  // Render external link buttons only if a link exists
+  const hasExternalLinks = ext1 || ext2 || ext3;
+  const externalLinksHTML = hasExternalLinks ? `
     <div style="margin-top:14px; padding:12px; background:var(--pitch); border:1px solid var(--line); border-radius:var(--radius-s);">
       <div style="font-weight:600; font-size:.88rem; margin-bottom:8px; color:var(--flood);">🔗 Watch on External Sites</div>
       <div class="share">
-        <a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Server 1 ↗</a>
-        <a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Server 2 ↗</a>
-        <a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Server 3 ↗</a>
+        ${ext1 ? `<a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Server 1 ↗</a>` : ''}
+        ${ext2 ? `<a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Server 2 ↗</a>` : ''}
+        ${ext3 ? `<a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Server 3 ↗</a>` : ''}
       </div>
-    </div>`;
+    </div>` : '';
 
   document.getElementById('mBody').innerHTML = `
     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
@@ -761,26 +762,11 @@ async function openMatch(id){
   renderAds();
   loadComments(m.id, 'mcList');
   document.getElementById('mcSend').addEventListener('click', ()=>postComment('mcName','mcBody',m.id,'mcList'));
-//   document.querySelectorAll('[data-server]').forEach(b=>b.addEventListener('click',()=>{
-//     document.querySelector('#mBody .player').innerHTML =
-//       `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
-//   }));
-// }
-document.querySelectorAll('[data-server]').forEach(b => {
-    b.addEventListener('click', (e) => {
-        e.preventDefault();
-        const url = b.dataset.server || b.getAttribute('data-url');
-        if (!url || url === '#') return;
-
-        // If it is an external link, open in a new tab; otherwise, embed iframe
-        if (url.startsWith('http') && !url.includes('.m3u8') && !url.includes('embed')) {
-            window.open(url, '_blank');
-        } else {
-            document.querySelector('#mBody .player').innerHTML = 
-                `<iframe src="${url}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
-        }
-    });
-});
+  document.querySelectorAll('[data-server]').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelector('#mBody .player').innerHTML =
+      `<iframe src="${b.dataset.server}" allowfullscreen allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
+  }));
+}
 
 
 // async function openMatch(id){
