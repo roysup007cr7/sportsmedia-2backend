@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://quge5.com/88/tag.min.js" data-zone="281652" async data-cfasync="false"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Media Live</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- <script src="https://formssternlystately.com/8c/66/83/8c66837016984dc8652552dcd427cb5b.js"></script> -->
+    
+    <style>
+        /* Prevent layout horizontal breaking on viewports below 480px */
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Hard restriction on horizontal overflowing layout bounds */
+        }
+
+        /* Ensure your main streaming wrapper matches your matches container properties */
+        .main_container {
+            max-width: 95%;
+            width: 600px; /* Adjust if your server main design wrapper uses alternative sizing */
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        /* CRITICAL SPEED OPTIMIZATION FOR FCP */
+        .news-container, .main_container, .live-chat-box {
+            content-visibility: auto;
+            contain-intrinsic-size: 0 500px;
+        }
+.news-container {
+            max-width: 95%;
+            width: 1000px;
+            margin: 0 auto 30px auto;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-sizing: border-box;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .news-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .news-card:hover {
+            transform: translateY(-3px);
+            border-color: #00ffcc;
+        }
+        .news-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .news-card p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0 0 15px 0;
+            line-height: 1.5;
+        }
+        .news-link {
+            color: #00ffcc;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            align-self: flex-start;
+        }
+        /* Status Badge Fallbacks if missing in style.css */
+        .live-blink { color: #ff2d55; font-weight: bold; }
+        .upcoming-badge { color: #ffcc00; }
+        .finished-badge { color: rgba(255,255,255,0.4); }
+        .live-server-glow { box-shadow: 0 0 10px #00ffcc; }
+
+        /* --- ADDED PROFILE & WHATSAPP LOGO STYLES FOR THE NAVBAR --- */
+        .nav-right-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .profile-avatar-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #00ffcc;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .nav-wp-link-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        .nav-wp-link-icon:hover {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 8px #25D366);
+        }
+        .nav-wp-link-icon img {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Mobile Optimization for Navbar content */
+        @media(max-width: 768px) {
+            .nav-container {
+                flex-wrap: wrap;
+                gap: 10px;
+                justify-content: space-between;
+                padding: 10px 15px;
+            }
+            .nav-menu {
+                width: 100%;
+                justify-content: center;
+                order: 3;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-green">SPORTS</span><span class="logo-dark">MEDIA</span>
+            </div>
+            
+           <nav class="nav-menu">
+    <a href="#" class="nav-item active">Home</a>
+    <a href="#news-section" class="nav-item">News</a>
+    <a href="#schedules-section" class="nav-item">Live Matches</a> <!-- Points to your homepage streaming servers -->
+    <a href="matches.html" class="nav-item">Schedules</a> <!-- Points to your new API matches page -->
+    <a href="#footer-section" class="nav-item">About & Contact</a>
+</nav>
+
+            
+        </div>
+    </header>
+
+    <!-- <div class="ad-container" style="text-align: center; margin: 10px 0;">
+        <script>
+            atOptions = {
+                'key' : 'd06287ca115eb884468d7c2318ac80fa',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <!-- DEFER SCRIPT EXECUTIONS TO PROTECT USER DEVICE MEMORY RUNTIMES -->
+        <script src="https://www.highperformanceformat.com/d06287ca115eb884468d7c2318ac80fa/invoke.js" defer></script>
+    </div> -->
+
+    <!-- MAIN BRAND HEADER -->
+    <header>
+        <div style="width: 500px; max-width: 95%; margin: 20px auto; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 18px; padding: 20px; text-align: center; backdrop-filter: blur(10px); position: relative; z-index: 9999;">
+            <p style="font-size: 14px; margin-bottom: 15px; color: #fff;">📢 Never miss an equalizer! Get instant push notifications right when the big matches kick off.</p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 10000;">
+                <a href="https://chat.whatsapp.com/K0ETEuI3OkY1zau6AmOpQz" target="_blank" style="text-decoration: none; padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 30px; color: white; display: inline-flex; align-items: center; gap: 8px; background: #25D366; cursor: pointer;">
+                     💬 Join WhatsApp Channel
+                </a>
+                <a href="https://t.me/+dOxW3gPhETo2ZGJl" target="_blank" style="text-decoration: none; padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 30px; color: white; display: inline-flex; align-items: center; gap: 8px; background: #0088cc; cursor: pointer;">
+                    ✈️ Join Telegram Channel
+                </a>
+            </div>
+        </div>
+        <img class="logo" src="wall3.png" alt="Sports Media Live Logo">
+        <p>Leading sports streaming website</p>
+    </header>
+
+    <!-- ADDED TARGET SECTION ID FOR NEWS -->
+    <h3 class="match_title" id="news-section">LATEST BREAKING NEWS</h3>
+    <div class="news-container">
+        <div id="news-feed-loader" style="text-align:center; color:rgba(255,255,255,0.6); padding:10px; font-size: 14px;">
+            ⏳ Connecting to live media updates...
+        </div>
+        <div id="news-grid" class="news-grid"></div>
+    </div>
+
+    <!-- ADDED TARGET SECTION ID FOR SCHEDULES -->
+    <h3 class="match_title" id="schedules-section">MATCHES</h3>
+
+    <div style="width: 100%; display: flex; justify-content: center; margin: 15px 0 25px 0; clear: both;">
+        <button id="refresh-btn" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); padding: 12px 28px; border-radius: 30px; color: white; cursor: pointer; font-weight: bold; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; width: auto; max-width: max-content; box-sizing: border-box; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);">
+            <span id="btn-text">🔄 Refresh Stream Links</span>
+        </button>
+    </div>
+
+    <div class="main">
+      <!-- MATCH 1:  -->
+
+      <!-- <script>
+  atOptions = {
+    'key' : '0da92367a92071637c7a52612740dba0',
+    'format' : 'iframe',
+    'height' : 60,
+    'width' : 468,
+    'params' : {}
+  };
+</script>
+<script src="https://formssternlystately.com/0da92367a92071637c7a52612740dba0/invoke.js"></script> -->
+
+<!-- PREMIER LEAGUE: AFC BOURNEMOUTH VS LIVERPOOL -->
+<div class="main_container" data-start="2026-09-20T18:30:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">PREMIER LEAGUE</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <h3 class="team-name">AFC Bournemouth</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <h3 class="team-name">Liverpool</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="https://es.epicsportss.com/2026/09/bou-liv.html" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="https://hellosport.jkssbcares.in/2026/09/bournemouth-vs-liverpool.html" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+<!-- PREMIER LEAGUE: MANCHESTER CITY VS SUNDERLAND -->
+<div class="main_container" data-start="2026-09-20T18:30:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">PREMIER LEAGUE</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <h3 class="team-name">Man City</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <h3 class="team-name">Sunderland</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="https://es.epicsportss.com/2026/09/cty-sun.html" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="https://hellosport.jkssbcares.in/2026/09/manchester-city-vs-sunderland.html" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+<!-- LALIGA: ATLETICO MADRID VS REAL MADRID -->
+<div class="main_container" data-start="2026-09-20T19:45:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">LALIGA</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🇪🇸</span>
+            <h3 class="team-name">Atlético Madrid</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🇪🇸</span>
+            <h3 class="team-name">Real Madrid</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="https://es.epicsportss.com/2026/09/atlc-real.html" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="https://hellosport.jkssbcares.in/2026/09/atletico-madrid-vs-real-madrid.html" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+<!-- PREMIER LEAGUE: FULHAM VS MANCHESTER UNITED -->
+<div class="main_container" data-start="2026-09-20T21:00:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">PREMIER LEAGUE</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <h3 class="team-name">Fulham</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</span>
+            <h3 class="team-name">Man United</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="https://es.epicsportss.com/2026/09/ful-utd.html" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="https://hellosport.jkssbcares.in/2026/09/fulham-vs-manchester-united.html" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+<!-- LIGUE 1: MARSEILLE VS PSG -->
+<div class="main_container" data-start="2026-09-21T00:15:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">LIGUE 1</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🇫🇷</span>
+            <h3 class="team-name">Marseille</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🇫🇷</span>
+            <h3 class="team-name">PSG</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="https://hellosport.jkssbcares.in/2026/09/olympique-de-marseille-vs-psg.html" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="#" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+<!-- SERIE A: AC MILAN VS LECCE -->
+<div class="main_container" data-start="2026-09-21T00:15:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">SERIE A</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🇮🇹</span>
+            <h3 class="team-name">AC Milan</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🇮🇹</span>
+            <h3 class="team-name">Lecce</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="#" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="#" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+<!-- MLS: INTER MIAMI VS SAN DIEGO -->
+<div class="main_container" data-start="2026-09-21T04:30:00+05:30">
+    <div class="match-meta">
+        <span class="league-tag">MLS</span>
+        <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="share-match-btn">🔗 Share</button>
+            <span class="status-badge"></span>
+        </div>
+    </div>
+    <div class="teams-display">
+        <div class="team">
+            <span class="flag">🇺🇸</span>
+            <h3 class="team-name">Inter Miami</h3>
+        </div>
+        <div class="vs">VS</div>
+        <div class="team">
+            <span class="flag">🇺🇸</span>
+            <h3 class="team-name">San Diego</h3>
+        </div>
+    </div>
+    <div class="timings">
+        <div class="match-time-display"></div>
+    </div>
+    <div class="links">
+        <div class="server-container">
+            <a href="https://es.epicsportss.com/2026/09/miam-san.html" target="_blank" class="server-btn btn-1">Server 1</a>
+            <a href="#" target="_blank" class="server-btn btn-2">Server 2</a>
+            <a href="https://formssternlystately.com/yynuivyk1t?key=9171aefccf772db59234484b5581fb5e" target="_blank" class="server-btn btn-3">Server 3 (Backup)</a>
+        </div>
+    </div>
+</div>
+
+
+        <!-- <div class="ad-container">
+            <script async="async" data-cfasync="false" src="https://pl29756407.effectivecpmnetwork.com/00eab0ceea0ea96e1764d988f090a9e4/invoke.js"></script>
+            <div id="container-00eab0ceea0ea96e1764d988f090a9e4"></div> -->
+        </div>
+
+        <div class="live-chat-box">
+            <div class="chat-header">
+                <div class="chat-status">
+                    <span class="pulse-dot"></span>
+                    <h3 class="chat-header-title">LIVE STREAM CHAT</h3>
+                </div>
+                <span class="chat-viewer-count" id="live-chat-viewers">12,450 online</span>
+            </div>
+            <div class="chat-messages-container" id="chat-messages"></div>
+            <div class="chat-input-bar">
+                <input type="text" id="chat-user-input" placeholder="Type a message to chat live..." maxlength="100">
+                <button id="chat-send-btn">Send</button>
+            </div>
+        </div>
+    </div> 
+
+    <button id="backToTop" title="Go to top">↑</button>
+    
+    <!-- PROFESSIONAL TWO-TONE FOOTER -->
+    <footer class="site-footer" id="footer-section">
+        <div class="footer-top-container">
+            <div class="about-us-section">
+                <h3>ABOUT US</h3>
+                <div class="red-line"></div>
+                <p>
+                    Latest ISL, MLS, Saudi, Indian, Premier, Champions League, Laliga, football live News, Transfers, Lineups, Schedules, And Complete Match Results. Join our official community to stay updated instantly!
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom-container">
+            <p>© 2026 SPORTS MEDIA.in. All rights reserved.</p>
+            <p>Owned & Operated by <strong>Supriyo Roy</strong> (Sports Media Group) since 2022. Designed by <strong>Supriyo Roy .</strong> </p>
+            
+            <div class="footer-links">
+                <a href="dmca.html">DMCA Disclaimer</a>
+                <span>|</span>
+                <a href="privacy.html">Privacy Policy</a>
+                <span>|</span>
+                <a href="mailto:roysup007@gmail.com" style="color: #00ffcc; font-weight: bold;">📧 Contact: roysup007@gmail.com</a>
+                <span>|</span>
+                <a href="https://instagram.com/supriyo_roycr7" target="_blank" style="color: #ff007f; font-weight: bold;">📸 Instagram</a>
+                <span>|</span>
+                <a href="https://www.facebook.com/share/1FBoak5USy/" target="_blank" style="color: #1877f2; font-weight: bold;">🔷 Facebook</a>
+                <span>|</span>
+                <a href="https://x.com/supriyo_roy007" target="_blank" style="color: #ffffff; font-weight: bold;">𝕏 Account</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // Seamlessly handle internal anchor link navigation if they clicked a nav item
+    document.addEventListener('click', function(e) {
+        const navItem = e.target.closest('.nav-item');
+        if (navItem) {
+            const targetId = navItem.getAttribute('href');
+            if (targetId && targetId.startsWith('#')) {
+                e.preventDefault();
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        }
+    });
+
+    // 2. AUTOMATED REAL SPORTS NEWS FETCH ENGINE
+    async function fetchRealSportsNews() {
+        const newsGrid = document.getElementById('news-grid');
+        const loader = document.getElementById('news-feed-loader');
+        if(!newsGrid || !loader) return;
+
+        const rssUrl = encodeURIComponent('https://www.skysports.com/rss/12040');
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`;
+
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (data.status === 'ok' && data.items && data.items.length > 0) {
+                loader.style.display = 'none';
+                newsGrid.innerHTML = ''; 
+                
+                const articles = data.items.slice(0, 3); 
+                
+                articles.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'news-card';
+                    
+                    let itemDesc = item.description || "Click read more below to access full breaking analytical breakdowns.";
+                    const cleanDesc = itemDesc.replace(/<[^>]*>/g, '').substring(0, 95) + '...';
+
+                    card.innerHTML = `
+                        <div>
+                            <h4>${item.title}</h4>
+                            <p>${cleanDesc}</p>
+                        </div>
+                        <a href="${item.link}" target="_blank" class="news-link">Read Full Story →</a>
+                    `;
+                    newsGrid.appendChild(card);
+                });
+            } else {
+                loader.innerHTML = "🏁 Standby for updated tournament insights.";
+            }
+        } catch (error) {
+            console.error("News load error:", error);
+            loader.innerHTML = "⚽ Live scoreboard data streaming normal.";
+        }
+    }
+
+    function updateMatchSignalsAndTimes() {
+        const now = new Date();
+        const matches = document.querySelectorAll('.main_container[data-start]');
+        
+        matches.forEach(card => {
+            const startTimeString = card.getAttribute('data-start');
+            if (!startTimeString) return;
+
+            const matchStartTime = new Date(startTimeString);
+            const matchEndTime = new Date(matchStartTime.getTime() + (2 * 60 * 60 * 1000)); 
+            
+            const badge = card.querySelector('.status-badge');
+            const timeDisplay = card.querySelector('.match-time-display');
+            const servers = card.querySelectorAll('.server-btn');
+            
+            if (now < matchStartTime) {
+                if (badge) {
+                    badge.className = "status-badge upcoming-badge";
+                    badge.innerHTML = "🕒 UPCOMING";
+                }
+                card.style.opacity = "1"; 
+                servers.forEach(btn => btn.classList.remove('live-server-glow'));
+            } 
+            else if (now >= matchStartTime && now <= matchEndTime) {
+                if (badge) {
+                    badge.className = "status-badge live-blink";
+                    badge.innerHTML = "● LIVE";
+                }
+                card.style.opacity = "1";
+                servers.forEach(btn => btn.classList.add('live-server-glow'));
+            } 
+            else {
+                if (badge) {
+                    badge.className = "status-badge finished-badge";
+                    badge.innerHTML = "🏁 FINISHED";
+                }
+                card.style.opacity = "0.6";
+                servers.forEach(btn => btn.classList.remove('live-server-glow'));
+            }
+
+            const localTimeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+            const localTimeStr = matchStartTime.toLocaleTimeString([], localTimeOptions);
+            const localDateStr = matchStartTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
+            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            if (timeDisplay) {
+                timeDisplay.innerHTML = `
+                    <div class="local-time-text">📅 ${localDateStr} &nbsp;|&nbsp; ⏰ ${localTimeStr}</div>
+                    <small class="timezone-subtext">Device Timezone: ${userTimezone}</small>
+                `;
+            }
+        });
+    }
+
+    const bttButton = document.getElementById("backToTop");
+    window.onscroll = function() {
+        if (bttButton) {
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                bttButton.classList.add("visible");
+            } else {
+                bttButton.classList.remove("visible");
+            }
+        }
+    };
+    if (bttButton) {
+        bttButton.addEventListener("click", function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    document.querySelectorAll('.share-match-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const container = this.closest('.main_container');
+            const teamElements = container.querySelectorAll('.team-name');
+            const t1 = teamElements[0]?.textContent || "Team A";
+            const t2 = teamElements[1]?.textContent || "Team B";
+            
+            const shareTitle = "Watch Live Stream";
+            const shareText = `Watching ${t1} vs ${t2} live right now in HD here! ⚽`;
+            const shareUrl = window.location.href;
+            const fullMessage = `${shareText}\n\n${shareUrl}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: shareUrl
+                }).catch(err => console.log("Share failed or canceled"));
+            } else {
+                navigator.clipboard.writeText(fullMessage).then(() => {
+                    const originalText = this.innerHTML;
+                    this.innerHTML = "✅ Copied!";
+                    this.style.background = "#25D366";
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.style.background = "rgba(255, 255, 255, 0.15)";
+                    }, 2000);
+                }).catch(() => {
+                    alert("Copy failed, please copy page link manually!");
+                });
+            }
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        updateMatchSignalsAndTimes();
+        fetchRealSportsNews(); 
+        setInterval(updateMatchSignalsAndTimes, 20000); 
+        setInterval(fetchRealSportsNews, 180000); 
+
+        const chatContainer = document.getElementById("chat-messages");
+        const viewerCounter = document.getElementById("live-chat-viewers");
+
+        const firstNames = ["Diego", "Alex", "Sam", "Marco", "Leo", "Santi", "Chris", "Kevin", "Ali", "Kim", "John", "Luis", "Mateo", "Lucas", "RonaldoFan", "MessiGoat", "NeymarJR"];
+        const lastNames = ["99", "_FC", "Streamer", "CR7", "LM10", "Gamer", "_HD", "Fan", "Goal", "Rooney", "Silva", "K-Fan", "Ultra", "Winner"];
+        const colors = ["#34c759", "#007aff", "#ff9500", "#af52de", "#ff2d55", "#5ac8fa", "#ffcc00", "#00ffcc", "#ff00ff"];
+
+        const messagesPool = [
+            "GOALLLL!!! WHAT A CRACKER!!! 🔥🚀",
+            "Ref is absolutely blind omg 🤦‍♂️❌",
+            "Is link 2 working in 1080p for anyone else?",
+            "Yeah link 2 is perfect HD crisp frame rate",
+            "What a save! Keeper is a beast today 🧤⚡",
+            "This match is insane 😱🍿",
+            "Stream is running so smooth here, thanks admin!",
+            "VAMOSSSS!!! ⚽⚽⚽",
+            "Yellow card?? Never a foul bro 😂",
+            "Who got the assist on that?",
+            "Offside all day long smh",
+            "Checking in from Mexico! Let's goooo 🇲🇽",
+            "South Korea fighting! 🇰🇷💪",
+            "Wow what a tactical match, beautiful football",
+            "My internet lagged but the backup link instantly fixed it 🙌",
+            "Clear penalty! Come on VAR check it!",
+            "This game is definitely ending in a draw 🤝",
+            "That miss was criminal how did he drop that 😭",
+            "Insane skills, what a run!",
+            "Link 1 buffering a bit, switched to Server 2 and its perfect!"
+        ];
+
+        function generateMessage() {
+            if (!chatContainer) return;
+
+            const name = firstNames[Math.floor(Math.random() * firstNames.length)] + lastNames[Math.floor(Math.random() * lastNames.length)];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const text = messagesPool[Math.floor(Math.random() * messagesPool.length)];
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "chat-msg";
+
+            const userSpan = document.createElement("span");
+            userSpan.className = "chat-user-node";
+            userSpan.style.color = color;
+            userSpan.textContent = name + ":";
+
+            const textSpan = document.createElement("span");
+            textSpan.className = "chat-text-node";
+            textSpan.textContent = " " + text;
+
+            msgDiv.appendChild(userSpan);
+            msgDiv.appendChild(textSpan);
+            chatContainer.appendChild(msgDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            if (chatContainer.children.length > 30) {
+                chatContainer.removeChild(chatContainer.firstChild);
+            }
+
+            if (Math.random() > 0.7 && viewerCounter) {
+                const currentCount = parseInt(viewerCounter.textContent.replace(/,/g, ''));
+                const variance = Math.floor(Math.random() * 30) - 13; 
+                viewerCounter.textContent = (currentCount + variance).toLocaleString() + " online";
+            }
+
+            const nextInterval = Math.floor(Math.random() * 1800) + 500;
+            setTimeout(generateMessage, nextInterval);
+        }
+
+        for(let i = 0; i < 5; i++) {
+            setTimeout(generateMessage, i * 200);
+        }
+        setTimeout(generateMessage, 1200);
+
+        const userInput = document.getElementById("chat-user-input");
+        const sendBtn = document.getElementById("chat-send-btn");
+
+        function handleUserMessageSubmit() {
+            if (!userInput || !chatContainer) return;
+            const text = userInput.value.trim();
+            if (text === "") return;
+
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "chat-msg";
+
+            const userSpan = document.createElement("span");
+            userSpan.className = "chat-user-node";
+            userSpan.style.color = "#00ffcc"; 
+            userSpan.textContent = "You:";
+
+            const textSpan = document.createElement("span");
+            textSpan.className = "chat-text-node";
+            textSpan.textContent = " " + text;
+
+            msgDiv.appendChild(userSpan);
+            msgDiv.appendChild(textSpan);
+            chatContainer.appendChild(msgDiv);
+
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            userInput.value = "";
+        }
+
+        if (sendBtn && userInput) {
+            sendBtn.addEventListener("click", handleUserMessageSubmit);
+            userInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") {
+                    handleUserMessageSubmit();
+                }
+            });
+        }
+    });
+    </script>
+
+    <!-- 3. TRACKING INTEGRATION OBJECTS -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+    <script>
+      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+
+    <script>
+    document.getElementById('refresh-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        let button = this;
+        let btnText = document.getElementById('btn-text');
+        let timeLeft = 5;
+        
+        button.disabled = true;
+        button.style.opacity = "0.7";
+        button.style.cursor = "not-allowed";
+        button.style.background = "linear-gradient(135deg, #555, #333)";
+
+        btnText.innerHTML = `Checking Servers... (${timeLeft}s)`;
+
+        let countdownInterval = setInterval(function() {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                btnText.innerHTML = "🔄 Syncing Links...";
+                window.location.href = window.location.origin + window.location.pathname + '?v=' + new Date().getTime();
+            } else {
+                btnText.innerHTML = `Checking Servers... (${timeLeft}s)`;
+            }
+        }, 1000);
+    });
+    </script>
+</body>
+</html>

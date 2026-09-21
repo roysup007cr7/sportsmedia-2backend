@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin · Sports Media</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pitch:#06161a;--pitch-2:#0b2128;--card:#0f2a31;--line:#1b4049;
+  --ink:#eaf7f5;--muted:#8fb0b5;--flood:#ffc24b;--turf:#2fd7c4;--live:#ff4d4d;
+  --sans:'Barlow',system-ui,sans-serif;--cond:'Barlow Condensed',sans-serif;--r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--pitch);color:var(--ink);font-family:var(--sans);font-size:15px}
+h1,h2,h3{font-family:var(--cond);margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--flood)}
+:focus-visible{outline:2px solid var(--flood);outline-offset:2px}
+
+/* login */
+.login{min-height:100dvh;display:grid;place-items:center;padding:20px}
+.login .box{width:min(400px,100%);background:var(--pitch-2);border:1px solid var(--line);border-radius:18px;padding:28px}
+.login h1{font-size:1.8rem;margin-bottom:4px}
+.login p{color:var(--muted);margin:0 0 20px;font-size:.9rem}
+
+/* app */
+.app{display:none;grid-template-columns:230px 1fr;min-height:100dvh}
+.app.on{display:grid}
+aside{background:var(--pitch-2);border-right:1px solid var(--line);padding:18px 14px;position:sticky;top:0;height:100dvh;overflow:auto}
+.logo{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.logo .mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,var(--flood),#ff8a3d);color:#19110a;display:grid;place-items:center;font-family:var(--cond);font-weight:700}
+.logo b{font-family:var(--cond);font-size:1.25rem}
+aside nav{display:grid;gap:3px}
+aside nav button{
+  text-align:left;padding:9px 12px;border:0;border-radius:9px;background:transparent;cursor:pointer;color:var(--muted);font-weight:500
+}
+aside nav button:hover{background:var(--card);color:var(--ink)}
+aside nav button.on{background:color-mix(in srgb,var(--flood) 14%,transparent);color:var(--flood);font-weight:600}
+aside .who{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.83rem}
+
+main{padding:26px 28px;max-width:1100px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.topbar h2{font-size:1.7rem}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--pitch-2);cursor:pointer;font-weight:600;font-size:.88rem;text-decoration:none}
+.btn:hover{border-color:var(--flood)}
+.btn.primary{background:var(--flood);border-color:var(--flood);color:#19110a}
+.btn.danger{border-color:color-mix(in srgb,var(--live) 50%,var(--line));color:var(--live)}
+.btn.sm{padding:6px 12px;font-size:.82rem}
+.panel{display:none}
+.panel.on{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.stat b{display:block;font-family:var(--cond);font-size:2rem;line-height:1.1}
+.stat span{color:var(--muted);font-size:.85rem}
+.box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:18px}
+.box h3{font-size:1.2rem;margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:.8rem;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--pitch)}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{text-align:left;font-family:var(--cond);font-weight:600;color:var(--muted);padding:9px 8px;border-bottom:1px solid var(--line);font-size:.92rem}
+td{padding:11px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:hover td{background:color-mix(in srgb,var(--pitch-2) 60%,transparent)}
+.tag{display:inline-block;padding:3px 9px;border-radius:999px;font-family:var(--cond);font-size:.78rem;font-weight:700;letter-spacing:.05em}
+.tag.LIVE{background:color-mix(in srgb,var(--live) 18%,transparent);color:var(--live)}
+.tag.UPCOMING{background:color-mix(in srgb,var(--turf) 15%,transparent);color:var(--turf)}
+.tag.FINISHED,.tag.POSTPONED,.tag.CANCELLED{background:var(--pitch-2);color:var(--muted)}
+.linkcell input{width:100%;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:var(--pitch);font-size:.83rem}
+.muted{color:var(--muted);font-size:.86rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--flood);color:#19110a;padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;transition:opacity .2s;z-index:50}
+.toast.show{opacity:1}
+.err{color:var(--live);font-size:.86rem;min-height:20px}
+@media(max-width:860px){.app.on{grid-template-columns:1fr}aside{position:static;height:auto}.grid2{grid-template-columns:1fr}main{padding:18px}}
+</style>
+<script>window.SM_API = "http://localhost:8080/api";</script>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="login">
+  <div class="box">
+    <h1>Sports Media admin</h1>
+    <p>Sign in to manage fixtures, stream links and the site.</p>
+    <label class="field"><span>Username</span><input id="u" autocomplete="username"></label>
+    <label class="field"><span>Password</span><input id="p" type="password" autocomplete="current-password"></label>
+    <label class="field"><span>Backend address</span><input id="apiUrl"></label>
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" id="doLogin" style="width:100%;justify-content:center">Sign in</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <aside>
+    <div class="logo"><span class="mark">SM</span><b>Admin</b></div>
+    <nav id="nav">
+      <button data-tab="dash" class="on">Dashboard</button>
+      <button data-tab="matches">Matches and links</button>
+      <button data-tab="add">Add a match</button>
+      <button data-tab="leagues">Sports and leagues</button>
+      <button data-tab="comments">Comments</button>
+      <button data-tab="news">News posts</button>
+      <button data-tab="ads">Ad slots</button>
+      <button data-tab="messages">Messages</button>
+      <button data-tab="payments">Payments</button>
+      <button data-tab="settings">Site settings</button>
+    </nav>
+    <div class="who">Signed in as <b id="whoName">admin</b><br>
+      <button class="btn sm" id="logout" style="margin-top:10px">Sign out</button>
+      <a class="btn sm" href="index.html" target="_blank" style="margin-top:6px">View site</a>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div class="panel on" id="tab-dash">
+      <div class="topbar"><h2>Dashboard</h2>
+        <div><button class="btn" id="btnSync">Pull fixtures from API</button>
+        <button class="btn primary" id="btnReload">Refresh</button></div></div>
+      <div class="cards" id="stats"></div>
+      <div class="box"><h3>Quick stream links</h3>
+        <p class="muted">Everything live or starting soon. Paste the embed URL and press Save — viewers see it immediately.</p>
+        <table><thead><tr><th>Match</th><th>Kick-off</th><th>Status</th><th style="width:38%">Stream link</th><th></th></tr></thead>
+        <tbody id="quickRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- MATCHES -->
+    <div class="panel" id="tab-matches">
+      <div class="topbar"><h2>Matches and links</h2>
+        <input id="mFilter" placeholder="Filter by team or league" style="padding:9px 12px;border-radius:9px;border:1px solid var(--line);background:var(--pitch-2);min-width:240px"></div>
+      <div class="box" style="padding:10px 14px">
+        <table><thead><tr><th>Match</th><th>League</th><th>Kick-off (your time)</th><th>Status</th><th style="width:28%">Stream link</th><th></th></tr></thead>
+        <tbody id="matchRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ADD -->
+    <div class="panel" id="tab-add">
+      <div class="topbar"><h2 id="addTitle">Add a match</h2></div>
+      <div class="box">
+        <div class="grid2">
+          <label class="field"><span>Home team</span><input id="f_home"></label>
+          <label class="field"><span>Away team</span><input id="f_away"></label>
+          <label class="field"><span>Home crest URL</span><input id="f_homeLogo" placeholder="https://…"></label>
+          <label class="field"><span>Away crest URL</span><input id="f_awayLogo" placeholder="https://…"></label>
+          <label class="field"><span>League</span><select id="f_league"></select></label>
+          <label class="field"><span>Kick-off (your device time)</span><input id="f_kick" type="datetime-local"></label>
+          <label class="field"><span>Status</span><select id="f_status">
+            <option>UPCOMING</option><option>LIVE</option><option>FINISHED</option>
+            <option>POSTPONED</option><option>CANCELLED</option></select></label>
+          <label class="field"><span>Score (home / away)</span>
+            <span style="display:flex;gap:8px"><input id="f_hs" placeholder="0"><input id="f_as" placeholder="0"></span></label>
+        </div>
+        <label class="field"><span>Description shown under the title</span><input id="f_desc" placeholder="Matchday 7 · Santiago Bernabeu"></label>
+        <label class="field"><span>Main stream link (iframe or HLS URL)</span><input id="f_stream" placeholder="https://…"></label>
+        <label class="field"><span>Extra servers — one per line, as <code>Label|URL</code></span>
+          <textarea id="f_backup" rows="3" placeholder="Hindi commentary|https://…"></textarea></label>
+        <label class="field"><span>Poster image URL</span><input id="f_poster"></label>
+        <div style="display:flex;gap:18px;margin-bottom:14px">
+          <label><input type="checkbox" id="f_featured"> Feature on the home banner</label>
+          <label><input type="checkbox" id="f_visible" checked> Visible on the site</label>
+        </div>
+        <button class="btn primary" id="saveMatch">Save match</button>
+        <button class="btn" id="clearForm">Clear form</button>
+        <input type="hidden" id="f_id">
+      </div>
+    </div>
+
+    <!-- LEAGUES -->
+    <div class="panel" id="tab-leagues">
+      <div class="topbar"><h2>Sports and leagues</h2></div>
+      <div class="grid2">
+        <div class="box"><h3>Add a sport category</h3>
+          <label class="field"><span>Name</span><input id="s_name" placeholder="Hockey"></label>
+          <div class="grid2">
+            <label class="field"><span>Icon</span><input id="s_icon" placeholder="🏑"></label>
+            <label class="field"><span>Accent colour</span><input id="s_color" placeholder="#2fd7c4"></label>
+          </div>
+          <button class="btn primary" id="saveSport">Add sport</button>
+          <div id="sportList" style="margin-top:14px"></div>
+        </div>
+        <div class="box"><h3>Add a league</h3>
+          <label class="field"><span>Name</span><input id="l_name" placeholder="Durand Cup"></label>
+          <label class="field"><span>Sport</span><select id="l_sport"></select></label>
+          <div class="grid2">
+            <label class="field"><span>Country</span><input id="l_country" placeholder="India"></label>
+            <label class="field"><span>API code (optional)</span><input id="l_code" placeholder="PD / CL / PL"></label>
+          </div>
+          <label class="field"><span>Logo URL</span><input id="l_logo"></label>
+          <button class="btn primary" id="saveLeague">Add league</button>
+          <div id="leagueList" style="margin-top:14px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="panel" id="tab-comments">
+      <div class="topbar"><h2>Comments</h2><span class="muted">Approve what appears on the fan wall</span></div>
+      <div class="box" style="padding:10px 14px">
+        <table><thead><tr><th>Name</th><th>Comment</th><th>Posted</th><th>State</th><th></th></tr></thead>
+        <tbody id="commentRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="panel" id="tab-news">
+      <div class="topbar"><h2>News posts</h2></div>
+      <div class="box">
+        <label class="field"><span>Headline</span><input id="n_title"></label>
+        <label class="field"><span>Summary</span><input id="n_summary"></label>
+        <label class="field"><span>Cover image URL</span><input id="n_cover"></label>
+        <label class="field"><span>Article</span><textarea id="n_body" rows="6"></textarea></label>
+        <button class="btn primary" id="saveNews">Publish post</button>
+      </div>
+    </div>
+
+    <!-- ADS -->
+    <div class="panel" id="tab-ads">
+      <div class="topbar"><h2>Ad slots</h2><span class="muted">Adsterra, Monetag, AdSense — paste the code, pick a spot</span></div>
+      <div class="box">
+        <div class="grid2">
+          <label class="field"><span>Name</span><input id="a_name" placeholder="Monetag banner"></label>
+          <label class="field"><span>Position on the page</span><select id="a_place">
+            <option value="header">Header strip</option>
+            <option value="under-hero">Under the hero board</option>
+            <option value="in-feed">Between match rows</option>
+            <option value="above-player">Above the player</option>
+            <option value="below-player">Below the player</option>
+            <option value="footer">Footer</option>
+          </select></label>
+        </div>
+        <label class="field"><span>Ad code</span><textarea id="a_code" rows="5" placeholder="&lt;script&gt;…&lt;/script&gt;"></textarea></label>
+        <label style="display:block;margin-bottom:12px"><input type="checkbox" id="a_active" checked> Active</label>
+        <button class="btn primary" id="saveAd">Save ad slot</button>
+      </div>
+      <div class="box" style="padding:10px 14px">
+        <table><thead><tr><th>Name</th><th>Position</th><th>State</th><th></th></tr></thead><tbody id="adRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="panel" id="tab-messages">
+      <div class="topbar"><h2>Messages</h2></div>
+      <div class="box" style="padding:10px 14px">
+        <table><thead><tr><th>From</th><th>Subject</th><th>Message</th><th>Received</th><th></th></tr></thead>
+        <tbody id="msgRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div class="panel" id="tab-payments">
+      <div class="topbar"><h2>Payments</h2><span class="muted">UPI details now; gateway later</span></div>
+      <div class="box">
+        <div class="grid2">
+          <label class="field"><span>Your UPI ID (GPay, Paytm, PhonePe)</span><input id="pay_upi" placeholder="supriyo@okaxis"></label>
+          <label class="field"><span>Payee name on the request</span><input id="pay_name" placeholder="Supriyo Roy"></label>
+        </div>
+        <button class="btn primary" id="savePay">Save payment details</button>
+      </div>
+      <div class="box" style="padding:10px 14px">
+        <table><thead><tr><th>Reference</th><th>Plan</th><th>Amount</th><th>Method</th><th>State</th><th>Created</th></tr></thead>
+        <tbody id="payRows"></tbody></table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="tab-settings">
+      <div class="topbar"><h2>Site settings</h2><button class="btn primary" id="saveSettings">Save settings</button></div>
+      <div class="box"><h3>Identity</h3>
+        <div class="grid2">
+          <label class="field"><span>Site name</span><input data-k="site.name"></label>
+          <label class="field"><span>Tagline</span><input data-k="site.tagline"></label>
+          <label class="field"><span>Public address (used in share links)</span><input data-k="site.baseUrl"></label>
+          <label class="field"><span>Owner</span><input data-k="site.owner"></label>
+          <label class="field"><span>Contact email</span><input data-k="contact.email"></label>
+        </div>
+      </div>
+      <div class="box"><h3>Social channels</h3>
+        <div class="grid2">
+          <label class="field"><span>WhatsApp link</span><input data-k="social.whatsapp" placeholder="https://chat.whatsapp.com/…"></label>
+          <label class="field"><span>Telegram link</span><input data-k="social.telegram" placeholder="https://t.me/…"></label>
+          <label class="field"><span>Facebook</span><input data-k="social.facebook"></label>
+          <label class="field"><span>Instagram</span><input data-k="social.instagram"></label>
+          <label class="field"><span>YouTube</span><input data-k="social.youtube"></label>
+          <label class="field"><span>X</span><input data-k="social.x"></label>
+        </div>
+      </div>
+      <div class="box"><h3>Join popup</h3>
+        <div class="grid2">
+          <label class="field"><span>Show it</span><select data-k="popup.enabled"><option value="true">Yes</option><option value="false">No</option></select></label>
+          <label class="field"><span>Delay in seconds</span><input data-k="popup.delaySeconds" type="number"></label>
+        </div>
+        <label class="field"><span>Heading</span><input data-k="popup.title"></label>
+        <label class="field"><span>Text</span><input data-k="popup.body"></label>
+      </div>
+      <div class="box"><h3>Comments</h3>
+        <label class="field"><span>Publish comments without review</span>
+          <select data-k="comments.autoApprove"><option value="false">No, I approve each one</option><option value="true">Yes, publish straight away</option></select></label>
+      </div>
+      <div class="box"><h3>Page text</h3>
+        <label class="field"><span>About</span><textarea data-k="page.about" rows="4"></textarea></label>
+        <label class="field"><span>Disclaimer</span><textarea data-k="page.disclaimer" rows="4"></textarea></label>
+        <label class="field"><span>Privacy policy</span><textarea data-k="page.privacy" rows="4"></textarea></label>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const S = {
+  get(k,d){ try{const v=localStorage.getItem('sma.'+k);return v===null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{localStorage.setItem('sma.'+k,JSON.stringify(v));}catch(e){} },
+  del(k){ try{localStorage.removeItem('sma.'+k);}catch(e){} }
+};
+let API = S.get('api', window.SM_API || 'http://localhost:8080/api');
+let TOKEN = S.get('token', null);
+let CACHE = {matches:[], leagues:[], sports:[]};
+
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500);}
+const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const localTime = iso => new Date(iso).toLocaleString([], {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+
+async function call(path, opts={}){
+  const res = await fetch(API+path, {
+    ...opts,
+    headers:{'Content-Type':'application/json', ...(TOKEN?{'Authorization':'Bearer '+TOKEN}:{}), ...(opts.headers||{})}
+  });
+  if(res.status===401||res.status===403){ signOut(); throw new Error('Session expired — sign in again.'); }
+  if(!res.ok) throw new Error('Request failed ('+res.status+')');
+  return res.status===204 ? null : res.json();
+}
+
+/* ---------- auth ---------- */
+document.getElementById('apiUrl').value = API;
+document.getElementById('doLogin').addEventListener('click', signIn);
+document.getElementById('p').addEventListener('keydown', e=>{ if(e.key==='Enter') signIn(); });
+
+async function signIn(){
+  const err = document.getElementById('loginErr'); err.textContent='';
+  API = document.getElementById('apiUrl').value.trim() || API; S.set('api',API);
+  try{
+    const r = await call('/auth/login',{method:'POST',body:JSON.stringify({
+      username:document.getElementById('u').value.trim(),
+      password:document.getElementById('p').value })});
+    TOKEN = r.token; S.set('token',TOKEN); S.set('name', r.displayName||'Admin');
+    start();
+  }catch(e){ err.textContent = 'Sign-in failed. Check the username, password and backend address.'; }
+}
+function signOut(){ TOKEN=null; S.del('token'); document.getElementById('app').classList.remove('on'); document.getElementById('login').style.display='grid'; }
+document.getElementById('logout').addEventListener('click', signOut);
+
+function start(){
+  document.getElementById('login').style.display='none';
+  document.getElementById('app').classList.add('on');
+  document.getElementById('whoName').textContent = S.get('name','Admin');
+  loadAll();
+}
+
+/* ---------- tabs ---------- */
+document.getElementById('nav').addEventListener('click', e=>{
+  const b = e.target.closest('[data-tab]'); if(!b) return;
+  document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on', x===b));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on', p.id==='tab-'+b.dataset.tab));
+});
+
+/* ---------- load everything ---------- */
+async function loadAll(){
+  try{
+    const [stats, matches, sports, leagues, comments, ads, msgs, settings, pays] = await Promise.all([
+      call('/admin/stats'), call('/admin/matches'), call('/public/sports'), call('/public/leagues'),
+      call('/admin/comments'), call('/admin/ads'), call('/admin/messages'), call('/admin/settings'),
+      call('/admin/payments')
+    ]);
+    CACHE = {matches, sports, leagues};
+    renderStats(stats); renderMatches(); renderQuick();
+    renderSelects(); renderCatalog();
+    renderComments(comments); renderAds(ads); renderMessages(msgs); renderPayments(pays);
+    fillSettings(settings);
+  }catch(e){ toast(e.message); }
+}
+document.getElementById('btnReload').addEventListener('click', loadAll);
+document.getElementById('btnSync').addEventListener('click', async ()=>{
+  try{ const r = await call('/admin/sync',{method:'POST'}); toast(r.message); loadAll(); }
+  catch(e){ toast(e.message); }
+});
+
+function renderStats(s){
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>${s.liveNow}</b><span>live right now</span></div>
+    <div class="stat"><b>${s.upcoming}</b><span>upcoming fixtures</span></div>
+    <div class="stat"><b>${s.totalMatches}</b><span>matches in total</span></div>
+    <div class="stat"><b>${s.pendingComments}</b><span>comments awaiting review</span></div>
+    <div class="stat"><b>${s.unreadMessages}</b><span>unread messages</span></div>
+    <div class="stat"><b>${s.totalViews}</b><span>match views</span></div>`;
+}
+
+/* ---------- matches ---------- */
+function matchRow(m, compact){
+  return `<tr data-id="${m.id}">
+    <td><b>${esc(m.homeTeam)}</b> vs <b>${esc(m.awayTeam)}</b><br><span class="muted">${esc(m.description||'')}</span></td>
+    ${compact?'':`<td class="muted">${esc(m.league?m.league.name:'—')}</td>`}
+    <td class="muted">${localTime(m.kickoffUtc)}</td>
+    <td><span class="tag ${m.status}">${m.status}</span></td>
+    <td class="linkcell"><input value="${esc(m.streamUrl||'')}" placeholder="Paste embed URL" data-link="${m.id}"></td>
+    <td style="white-space:nowrap">
+      <button class="btn sm primary" data-savelink="${m.id}">Save</button>
+      ${compact?`<button class="btn sm" data-golive="${m.id}">${m.status==='LIVE'?'End':'Go live'}</button>`
+               :`<button class="btn sm" data-edit="${m.id}">Edit</button>
+                 <button class="btn sm danger" data-del="${m.id}">Delete</button>`}
+    </td></tr>`;
+}
+function renderQuick(){
+  const soon = CACHE.matches
+    .filter(m => m.status==='LIVE' || (m.status==='UPCOMING' && new Date(m.kickoffUtc)-Date.now() < 36*36e5))
+    .sort((a,b)=>new Date(a.kickoffUtc)-new Date(b.kickoffUtc));
+  document.getElementById('quickRows').innerHTML = soon.length
+    ? soon.map(m=>matchRow(m,true)).join('')
+    : `<tr><td colspan="5" class="muted">Nothing starting in the next 36 hours.</td></tr>`;
+}
+function renderMatches(){
+  const q = (document.getElementById('mFilter').value||'').toLowerCase();
+  const list = CACHE.matches
+    .filter(m => !q || (m.homeTeam+' '+m.awayTeam+' '+(m.league?m.league.name:'')).toLowerCase().includes(q))
+    .sort((a,b)=>new Date(b.kickoffUtc)-new Date(a.kickoffUtc));
+  document.getElementById('matchRows').innerHTML = list.length
+    ? list.map(m=>matchRow(m,false)).join('')
+    : `<tr><td colspan="6" class="muted">No matches yet. Add one from “Add a match”.</td></tr>`;
+}
+document.getElementById('mFilter').addEventListener('input', renderMatches);
+
+document.addEventListener('click', async e=>{
+  const save = e.target.closest('[data-savelink]');
+  if(save){
+    const id = save.dataset.savelink;
+    const input = document.querySelector(`[data-link="${id}"]`);
+    try{ await call('/admin/matches/'+id+'/stream',{method:'PATCH',body:JSON.stringify({streamUrl:input.value.trim()})});
+      toast('Stream link saved'); loadAll(); }catch(err){ toast(err.message); }
+    return;
+  }
+  const go = e.target.closest('[data-golive]');
+  if(go){
+    const m = CACHE.matches.find(x=>String(x.id)===go.dataset.golive);
+    const next = m.status==='LIVE' ? 'FINISHED' : 'LIVE';
+    try{ await call(`/admin/matches/${m.id}/status?status=${next}`,{method:'PATCH'});
+      toast('Status set to '+next); loadAll(); }catch(err){ toast(err.message); }
+    return;
+  }
+  const ed = e.target.closest('[data-edit]');
+  if(ed){ editMatch(ed.dataset.edit); return; }
+  const del = e.target.closest('[data-del]');
+  if(del && confirm('Delete this match?')){
+    try{ await call('/admin/matches/'+del.dataset.del,{method:'DELETE'}); toast('Deleted'); loadAll(); }catch(err){ toast(err.message); }
+  }
+});
+
+function toLocalInput(iso){
+  const d = new Date(iso), p = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function editMatch(id){
+  const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
+  document.getElementById('addTitle').textContent = 'Edit match';
+  const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
+  v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
+  v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
+  v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
+  v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
+  v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
+  document.getElementById('f_featured').checked = !!m.featured;
+  document.getElementById('f_visible').checked = m.visible !== false;
+  if(m.league) document.getElementById('f_league').value = m.league.id;
+  document.querySelector('[data-tab="add"]').click();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('clearForm').addEventListener('click', ()=>{
+  document.querySelectorAll('#tab-add input, #tab-add textarea').forEach(i=>{ if(i.type!=='checkbox') i.value=''; });
+  document.getElementById('f_id').value='';
+  document.getElementById('addTitle').textContent='Add a match';
+});
+document.getElementById('saveMatch').addEventListener('click', async ()=>{
+  const g = i => document.getElementById(i).value.trim();
+  if(!g('f_home')||!g('f_away')||!g('f_kick')){ toast('Teams and kick-off time are needed'); return; }
+  const payload = {
+    homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
+    description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
+    homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
+    streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+    featured:document.getElementById('f_featured').checked,
+    visible:document.getElementById('f_visible').checked,
+    leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null
+  };
+  const id = document.getElementById('f_id').value;
+  try{
+    await call('/admin/matches'+(id?'/'+id:''), {method:id?'PUT':'POST', body:JSON.stringify(payload)});
+    toast(id?'Match updated':'Match added');
+    document.getElementById('clearForm').click(); loadAll();
+  }catch(e){ toast(e.message); }
+});
+
+/* ---------- catalogue ---------- */
+function renderSelects(){
+  const opts = CACHE.leagues.map(l=>`<option value="${l.id}">${esc(l.name)}</option>`).join('');
+  document.getElementById('f_league').innerHTML = opts;
+  document.getElementById('l_sport').innerHTML = CACHE.sports.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function renderCatalog(){
+  document.getElementById('sportList').innerHTML = CACHE.sports.map(s=>
+    `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)">
+      <span>${s.icon||''} ${esc(s.name)}</span>
+      <button class="btn sm danger" data-delsport="${s.id}">Remove</button></div>`).join('');
+  document.getElementById('leagueList').innerHTML = CACHE.leagues.map(l=>
+    `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)">
+      <span>${esc(l.name)} <span class="muted">${esc(l.country||'')}</span></span>
+      <button class="btn sm danger" data-delleague="${l.id}">Remove</button></div>`).join('');
+}
+document.getElementById('saveSport').addEventListener('click', async ()=>{
+  const name = document.getElementById('s_name').value.trim(); if(!name) return toast('Name it first');
+  try{ await call('/admin/sports',{method:'POST',body:JSON.stringify({name,
+    icon:document.getElementById('s_icon').value.trim(),
+    accentColor:document.getElementById('s_color').value.trim()})});
+    toast('Sport added'); document.getElementById('s_name').value=''; loadAll(); }catch(e){ toast(e.message); }
+});
+document.getElementById('saveLeague').addEventListener('click', async ()=>{
+  const name = document.getElementById('l_name').value.trim(); if(!name) return toast('Name it first');
+  try{ await call('/admin/leagues',{method:'POST',body:JSON.stringify({name,
+    country:document.getElementById('l_country').value.trim(),
+    externalCode:document.getElementById('l_code').value.trim(),
+    logoUrl:document.getElementById('l_logo').value.trim(),
+    sportId:Number(document.getElementById('l_sport').value)})});
+    toast('League added'); document.getElementById('l_name').value=''; loadAll(); }catch(e){ toast(e.message); }
+});
+document.addEventListener('click', async e=>{
+  const ds = e.target.closest('[data-delsport]'), dl = e.target.closest('[data-delleague]');
+  if(ds && confirm('Remove this sport?')){ await call('/admin/sports/'+ds.dataset.delsport,{method:'DELETE'}); loadAll(); }
+  if(dl && confirm('Remove this league?')){ await call('/admin/leagues/'+dl.dataset.delleague,{method:'DELETE'}); loadAll(); }
+});
+
+/* ---------- comments ---------- */
+function renderComments(list){
+  document.getElementById('commentRows').innerHTML = list.length ? list
+    .sort((a,b)=> (a.approved===b.approved ? new Date(b.createdAt)-new Date(a.createdAt) : a.approved?1:-1))
+    .map(c=>`<tr>
+      <td><b>${esc(c.author)}</b></td>
+      <td>${esc(c.body)}</td>
+      <td class="muted">${localTime(c.createdAt)}</td>
+      <td>${c.approved?'<span class="tag FINISHED">Published</span>':'<span class="tag UPCOMING">Waiting</span>'}</td>
+      <td style="white-space:nowrap">
+        ${c.approved?'':`<button class="btn sm primary" data-appr="${c.id}">Approve</button>`}
+        <button class="btn sm" data-pin="${c.id}">${c.pinned?'Unpin':'Pin'}</button>
+        <button class="btn sm danger" data-delc="${c.id}">Delete</button></td></tr>`).join('')
+    : `<tr><td colspan="5" class="muted">No comments yet.</td></tr>`;
+}
+document.addEventListener('click', async e=>{
+  const a=e.target.closest('[data-appr]'), p=e.target.closest('[data-pin]'), d=e.target.closest('[data-delc]');
+  try{
+    if(a){ await call('/admin/comments/'+a.dataset.appr+'/approve',{method:'PATCH'}); toast('Approved'); loadAll(); }
+    if(p){ await call('/admin/comments/'+p.dataset.pin+'/pin',{method:'PATCH'}); loadAll(); }
+    if(d && confirm('Delete this comment?')){ await call('/admin/comments/'+d.dataset.delc,{method:'DELETE'}); loadAll(); }
+  }catch(err){ toast(err.message); }
+});
+
+/* ---------- ads ---------- */
+function renderAds(list){
+  document.getElementById('adRows').innerHTML = list.length ? list.map(a=>`<tr>
+    <td>${esc(a.name||'—')}</td><td class="muted">${esc(a.placement)}</td>
+    <td>${a.active?'<span class="tag UPCOMING">Live</span>':'<span class="tag FINISHED">Off</span>'}</td>
+    <td><button class="btn sm danger" data-dela="${a.id}">Delete</button></td></tr>`).join('')
+    : `<tr><td colspan="4" class="muted">No ad slots yet.</td></tr>`;
+}
+document.getElementById('saveAd').addEventListener('click', async ()=>{
+  try{ await call('/admin/ads',{method:'POST',body:JSON.stringify({
+    name:document.getElementById('a_name').value.trim(),
+    placement:document.getElementById('a_place').value,
+    code:document.getElementById('a_code').value,
+    active:document.getElementById('a_active').checked})});
+    toast('Ad slot saved'); document.getElementById('a_code').value=''; loadAll(); }catch(e){ toast(e.message); }
+});
+document.addEventListener('click', async e=>{
+  const d = e.target.closest('[data-dela]');
+  if(d && confirm('Delete this ad slot?')){ await call('/admin/ads/'+d.dataset.dela,{method:'DELETE'}); loadAll(); }
+});
+
+/* ---------- news / messages / payments ---------- */
+document.getElementById('saveNews').addEventListener('click', async ()=>{
+  const title = document.getElementById('n_title').value.trim(); if(!title) return toast('Add a headline');
+  try{ await call('/admin/news',{method:'POST',body:JSON.stringify({title,
+    summary:document.getElementById('n_summary').value.trim(),
+    coverUrl:document.getElementById('n_cover').value.trim(),
+    body:document.getElementById('n_body').value})});
+    toast('Post published'); ['n_title','n_summary','n_cover','n_body'].forEach(i=>document.getElementById(i).value=''); }
+  catch(e){ toast(e.message); }
+});
+function renderMessages(list){
+  document.getElementById('msgRows').innerHTML = list.length ? list.map(m=>`<tr>
+    <td><b>${esc(m.name)}</b><br><span class="muted">${esc(m.email||'')}</span></td>
+    <td>${esc(m.subject||'—')}</td><td>${esc(m.body)}</td>
+    <td class="muted">${localTime(m.createdAt)}</td>
+    <td>${m.read?'<span class="muted">read</span>':`<button class="btn sm" data-read="${m.id}">Mark read</button>`}</td></tr>`).join('')
+    : `<tr><td colspan="5" class="muted">No messages yet.</td></tr>`;
+}
+document.addEventListener('click', async e=>{
+  const r = e.target.closest('[data-read]');
+  if(r){ await call('/admin/messages/'+r.dataset.read+'/read',{method:'PATCH'}); loadAll(); }
+});
+function renderPayments(list){
+  document.getElementById('payRows').innerHTML = list.length ? list.map(p=>`<tr>
+    <td>${esc(p.orderRef)}</td><td>${esc(p.planCode||'—')}</td><td>₹${esc(p.amount)}</td>
+    <td>${esc(p.method||'—')}</td><td>${esc(p.status)}</td><td class="muted">${localTime(p.createdAt)}</td></tr>`).join('')
+    : `<tr><td colspan="6" class="muted">No payment attempts yet.</td></tr>`;
+}
+document.getElementById('savePay').addEventListener('click', async ()=>{
+  try{ await call('/admin/settings',{method:'PUT',body:JSON.stringify({settings:{
+    'payments.upiId':document.getElementById('pay_upi').value.trim(),
+    'payments.payeeName':document.getElementById('pay_name').value.trim()}})});
+    toast('Payment details saved'); }catch(e){ toast(e.message); }
+});
+
+/* ---------- settings ---------- */
+function fillSettings(s){
+  document.querySelectorAll('[data-k]').forEach(el=>{ el.value = s[el.dataset.k] ?? ''; });
+  document.getElementById('pay_upi').value = s['payments.upiId'] || '';
+  document.getElementById('pay_name').value = s['payments.payeeName'] || '';
+}
+document.getElementById('saveSettings').addEventListener('click', async ()=>{
+  const settings = {};
+  document.querySelectorAll('[data-k]').forEach(el=> settings[el.dataset.k] = el.value);
+  try{ await call('/admin/settings',{method:'PUT',body:JSON.stringify({settings})}); toast('Settings saved'); }
+  catch(e){ toast(e.message); }
+});
+
+/* ---------- boot ---------- */
+if(TOKEN) start();
+</script>
+</body>
+</html>
