@@ -719,11 +719,11 @@ async function openMatch(id){
           `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} ·${countdown(m.kickoffUtc)}`}</div></div>`;
 
   // Internal iframe backup server switches (handles both backupStreams and extraStreams)
+ // Internal iframe backup server switches (handles both backupStreams and extraStreams)
   const backups = m.backupStreams || m.extraStreams || [];
   const servers = backups.length
     ? `<div class="share" style="margin-top:12px">${backups.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url \vert{}\vert{} s.streamUrl \vert{}\vert{} s)}">${esc(s.label || s.name || ('Server '+(i+2)))}</button>`).join('')}</div>` : '';
-
   // Helper function to format external redirect links cleanly
   const fixUrl = u => {
     if (!u) return '';
