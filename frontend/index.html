@@ -718,13 +718,13 @@ async function openMatch(id){
         : m.status==='FINISHED' ? 'This match has finished.' :
           `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} ·${countdown(m.kickoffUtc)}`}</div></div>`;
 
-  // Internal iframe backup server switches (handles both backupStreams and extraStreams)
- // Internal iframe backup server switches (handles both backupStreams and extraStreams)
+  // Internal iframe server switches
+ 
   const backups = m.backupStreams || m.extraStreams || [];
   const servers = backups.length
     ? `<div class="share" style="margin-top:12px">${backups.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url \vert{}\vert{} s.streamUrl \vert{}\vert{} s)}">${esc(s.label || s.name || ('Server '+(i+2)))}</button>`).join('')}</div>` : '';
-  // Helper function to format external redirect links cleanly
+  // Helper function to format external redirect links
   const fixUrl = u => {
     if (!u) return '';
     u = String(u).trim();
@@ -732,7 +732,6 @@ async function openMatch(id){
     return /^https?:\/\//i.test(u) ? u : 'https://' + u;
   };
 
-  // Support both camelCase and snake_case API response formats
   const ext1 = fixUrl(m.extStream1 || m.ext_stream1);
   const ext2 = fixUrl(m.extStream2 || m.ext_stream2);
   const ext3 = fixUrl(m.extStream3 || m.ext_stream3);
