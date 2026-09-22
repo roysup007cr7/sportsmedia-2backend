@@ -67,9 +67,9 @@ public class MatchService {
 //     }
 
 
-matchEntity.setExtStream1(dto.extStream1);
-matchEntity.setExtStream2(dto.extStream2);
-matchEntity.setExtStream3(dto.extStream3);
+// matchEntity.setExtStream1(dto.extStream1);
+// matchEntity.setExtStream2(dto.extStream2);
+// matchEntity.setExtStream3(dto.extStream3);
 
     private List<StreamOption> parseBackups(String raw) {
         if (raw == null || raw.isBlank()) return List.of();
