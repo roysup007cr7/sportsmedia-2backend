@@ -87,26 +87,6 @@ public class AdminController {
         return new ApiMessage(true, "Match deleted.");
     }
 
-    // private MatchEntity apply(MatchEntity m, MatchRequest r) {
-    //     m.setHomeTeam(r.homeTeam());
-    //     m.setAwayTeam(r.awayTeam());
-    //     m.setHomeLogo(r.homeLogo());
-    //     m.setAwayLogo(r.awayLogo());
-    //     m.setDescription(r.description());
-    //     m.setKickoffUtc(r.kickoffUtc());
-    //     if (r.status() != null && !r.status().isBlank())
-    //         m.setStatus(MatchStatus.valueOf(r.status().toUpperCase()));
-    //     m.setHomeScore(r.homeScore());
-    //     m.setAwayScore(r.awayScore());
-    //     m.setStreamUrl(r.streamUrl());
-    //     m.setBackupStreams(r.backupStreams());
-    //     m.setPosterUrl(r.posterUrl());
-    //     m.setFeatured(r.featured() != null && r.featured());
-    //     m.setVisible(r.visible() == null || r.visible());
-    //     m.setAdminLocked(true);
-    //     if (r.leagueId() != null) leagueRepo.findById(r.leagueId()).ifPresent(m::setLeague);
-    //     return m;
-    // }
     private MatchEntity apply(MatchEntity m, MatchRequest r) {
         m.setHomeTeam(r.homeTeam());
         m.setAwayTeam(r.awayTeam());
@@ -120,12 +100,6 @@ public class AdminController {
         m.setAwayScore(r.awayScore());
         m.setStreamUrl(r.streamUrl());
         m.setBackupStreams(r.backupStreams());
-        
-        // ADD THESE 3 LINES HERE:
-        m.setExtStream1(r.extStream1());
-        m.setExtStream2(r.extStream2());
-        m.setExtStream3(r.extStream3());
-
         m.setPosterUrl(r.posterUrl());
         m.setFeatured(r.featured() != null && r.featured());
         m.setVisible(r.visible() == null || r.visible());
@@ -133,6 +107,32 @@ public class AdminController {
         if (r.leagueId() != null) leagueRepo.findById(r.leagueId()).ifPresent(m::setLeague);
         return m;
     }
+    // private MatchEntity apply(MatchEntity m, MatchRequest r) {
+    //     m.setHomeTeam(r.homeTeam());
+    //     m.setAwayTeam(r.awayTeam());
+    //     m.setHomeLogo(r.homeLogo());
+    //     m.setAwayLogo(r.awayLogo());
+    //     m.setDescription(r.description());
+    //     m.setKickoffUtc(r.kickoffUtc());
+    //     if (r.status() != null && !r.status().isBlank())
+    //         m.setStatus(MatchStatus.valueOf(r.status().toUpperCase()));
+    //     m.setHomeScore(r.homeScore());
+    //     m.setAwayScore(r.awayScore());
+    //     m.setStreamUrl(r.streamUrl());
+    //     m.setBackupStreams(r.backupStreams());
+        
+    //     // ADD THESE 3 LINES HERE:
+    //     m.setExtStream1(r.extStream1());
+    //     m.setExtStream2(r.extStream2());
+    //     m.setExtStream3(r.extStream3());
+
+    //     m.setPosterUrl(r.posterUrl());
+    //     m.setFeatured(r.featured() != null && r.featured());
+    //     m.setVisible(r.visible() == null || r.visible());
+    //     m.setAdminLocked(true);
+    //     if (r.leagueId() != null) leagueRepo.findById(r.leagueId()).ifPresent(m::setLeague);
+    //     return m;
+    // }
 
     // ---------- catalogue ----------
 

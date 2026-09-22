@@ -90,24 +90,24 @@ public record MatchView(
                                         String currency, String upiDeepLink, String note) {}
 
     // ---------- admin writes ----------
-//     public record MatchRequest(
-//             @NotBlank String homeTeam, @NotBlank String awayTeam,
-//             String homeLogo, String awayLogo, String description,
-//             @NotNull Instant kickoffUtc, String status,
-//             String homeScore, String awayScore,
-//             String streamUrl, String backupStreams, String posterUrl,
-//             Boolean featured, Boolean visible, Long leagueId
-//     ) {}
-
-public record MatchRequest(
+    public record MatchRequest(
             @NotBlank String homeTeam, @NotBlank String awayTeam,
             String homeLogo, String awayLogo, String description,
             @NotNull Instant kickoffUtc, String status,
             String homeScore, String awayScore,
             String streamUrl, String backupStreams, String posterUrl,
-            Boolean featured, Boolean visible, Long leagueId,
-            String extStream1, String extStream2, String extStream3
+            Boolean featured, Boolean visible, Long leagueId
     ) {}
+
+// public record MatchRequest(
+//             @NotBlank String homeTeam, @NotBlank String awayTeam,
+//             String homeLogo, String awayLogo, String description,
+//             @NotNull Instant kickoffUtc, String status,
+//             String homeScore, String awayScore,
+//             String streamUrl, String backupStreams, String posterUrl,
+//             Boolean featured, Boolean visible, Long leagueId,
+//             String extStream1, String extStream2, String extStream3
+//     ) {}
 
     public record LeagueRequest(@NotBlank String name, String slug, String country,
                                 String logoUrl, String externalCode,
