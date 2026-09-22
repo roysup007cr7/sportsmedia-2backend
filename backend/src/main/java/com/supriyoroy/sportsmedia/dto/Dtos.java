@@ -35,7 +35,26 @@ public final class Dtos {
 //             String shareUrl
 //     ) {}
 
-public record MatchView(
+// public record MatchView(
+//             Long id, String homeTeam, String awayTeam, String homeLogo, String awayLogo,
+//             String description, Instant kickoffUtc, String status,
+//             String homeScore, String awayScore, String posterUrl,
+//             boolean featured, long views,
+//             String leagueName, String leagueSlug, String leagueLogo,
+//             String sportName, String sportSlug,
+//             /** Only filled when the match is actually live — otherwise null. */
+//             String streamUrl,
+//             List<StreamOption> extraStreams,
+//             String shareUrl,
+//             String extStream1,
+//             String extStream2,
+//             String extStream3
+//     ) {}
+
+
+// Inside com.supriyoroy.sportsmedia.dto.Dtos
+
+    public record MatchView(
             Long id, String homeTeam, String awayTeam, String homeLogo, String awayLogo,
             String description, Instant kickoffUtc, String status,
             String homeScore, String awayScore, String posterUrl,
@@ -50,6 +69,7 @@ public record MatchView(
             String extStream2,
             String extStream3
     ) {}
+
 
     public record StreamOption(String label, String url) {}
 
@@ -89,14 +109,24 @@ public record MatchView(
     public record PaymentIntentResponse(String orderRef, String status, BigDecimal amount,
                                         String currency, String upiDeepLink, String note) {}
 
-    // ---------- admin writes ----------
-    public record MatchRequest(
+//     // ---------- admin writes ----------
+//     public record MatchRequest(
+//             @NotBlank String homeTeam, @NotBlank String awayTeam,
+//             String homeLogo, String awayLogo, String description,
+//             @NotNull Instant kickoffUtc, String status,
+//             String homeScore, String awayScore,
+//             String streamUrl, String backupStreams, String posterUrl,
+//             Boolean featured, Boolean visible, Long leagueId
+//     ) {}
+
+public record MatchRequest(
             @NotBlank String homeTeam, @NotBlank String awayTeam,
             String homeLogo, String awayLogo, String description,
             @NotNull Instant kickoffUtc, String status,
             String homeScore, String awayScore,
             String streamUrl, String backupStreams, String posterUrl,
-            Boolean featured, Boolean visible, Long leagueId
+            Boolean featured, Boolean visible, Long leagueId,
+            String extStream1, String extStream2, String extStream3
     ) {}
 
 // public record MatchRequest(

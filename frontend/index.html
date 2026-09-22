@@ -520,6 +520,84 @@ function countdown(iso){
 }
 
 /* ---------- rendering ---------- */
+// const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// function badge(st){
+//   if(st==='LIVE') return '<span class="badge live"><span class="dot"></span>LIVE</span>';
+//   if(st==='FINISHED') return '<span class="badge fin">FULL TIME</span>';
+//   if(st==='POSTPONED') return '<span class="badge fin">POSTPONED</span>';
+//   return '<span class="badge up">UPCOMING</span>';
+// }
+
+// function matchCard(m){
+//   const live = m.status==='LIVE', done = m.status==='FINISHED';
+//   const crest = u => u ? `<img class="crest-s" src="${esc(u)}" alt="">` : `<span class="crest-s">⚽</span>`;
+//   const when = live ? 'Playing now'
+//     : done ? `${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)}`
+//     : `<b>${fmtDay(m.kickoffUtc)}, ${fmtTime(m.kickoffUtc)}</b>` +
+//       (cfg.countdown ? ` · <span class="count" data-count="${m.kickoffUtc}">${countdown(m.kickoffUtc)}</span>` : '');
+//   return `
+//   <article class="match ${live?'is-live':''}">
+//     <div class="meta">${badge(m.status)}<span>${esc(m.leagueName||'')}</span></div>
+//     <div class="teams">
+//       <div class="team">${crest(m.homeLogo)}<span class="n">${esc(m.homeTeam)}</span><span class="s">${esc(m.homeScore??'')}</span></div>
+//       <div class="team">${crest(m.awayLogo)}<span class="n">${esc(m.awayTeam)}</span><span class="s">${esc(m.awayScore??'')}</span></div>
+//     </div>
+//     <div class="when">${when}</div>
+//     <div class="row">
+//       <button class="btn ${live?'primary':''} sm" data-open="${m.id}">${live?'Watch now':done?'Match info':'Details'}</button>
+//       <button class="btn sm" data-share="${m.id}" title="Share">↗ Share</button>
+//     </div>
+//   </article>`;
+// }
+
+// function renderHero(){
+//   const m = (DATA.live[0]) || (DATA.featured||[])[0] || DATA.upcoming[0];
+//   const el = document.getElementById('hero');
+//   if(!m){ el.innerHTML=''; return; }
+//   const live = m.status==='LIVE';
+//   const crest = u => u ? `<img class="crest" src="${esc(u)}" alt="">` : `<span class="crest">⚽</span>`;
+//   el.innerHTML = `
+//   <div class="board">
+//     <div class="board-top">
+//       <span class="comp">${esc(m.leagueName||'')}${m.description?' · '+esc(m.description):''}</span>
+//       ${badge(m.status)}
+//     </div>
+//     <div class="board-body">
+//       <div class="side">${crest(m.homeLogo)}<span class="tname">${esc(m.homeTeam)}</span></div>
+//       <div class="mid">
+//         ${live || m.status==='FINISHED'
+//           ? `<div class="score">${esc(m.homeScore??'0')} <span style="color:var(--muted)">:</span> ${esc(m.awayScore??'0')}</div>`
+//           : `<div class="kick">${fmtTime(m.kickoffUtc)}</div>`}
+//         <small>${live?'Second half under way':`${fmtDay(m.kickoffUtc)} ·${TZ}`}</small>
+//       </div>
+//       <div class="side">${crest(m.awayLogo)}<span class="tname">${esc(m.awayTeam)}</span></div>
+//     </div>
+//     <div class="board-actions">
+//       <button class="btn primary" data-open="${m.id}">${live?'Watch this match':'Match details'}</button>
+//       <button class="btn" data-share="${m.id}">Share match</button>
+//       <a class="btn ghost" href="#next">See full schedule</a>
+//     </div>
+//   </div>`;
+// }
+
+// function applyFilter(list){
+//   return list.filter(m =>
+//     (!filterSport || m.sportSlug===filterSport) &&
+//     (!filterLeague || m.leagueSlug===filterLeague));
+// }
+
+// function render(){
+//   const s = DATA.settings || {};
+//   document.getElementById('brandName').textContent = s['site.name'] || 'Sports Media';
+//   document.getElementById('fName').textContent = s['site.name'] || 'Sports Media';
+//   document.getElementById('fTag').textContent = s['site.tagline'] || 'Every kick-off, in your time zone.';
+//   document.getElementById('tzLabel').textContent = TZ;
+//   document.getElementById('tzOut').textContent = TZ;
+//   document.getElementById('yr').textContent = new Date().getFullYear();
+
+//   renderHero();
+
 const esc = s => (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function badge(st){
@@ -597,6 +675,7 @@ function render(){
   document.getElementById('yr').textContent = new Date().getFullYear();
 
   renderHero();
+}
 
   // categories
   const cats = document.getElementById('cats');
@@ -626,7 +705,7 @@ function render(){
   renderPages(s);
   loadComments();
   tickCountdowns();
-}
+
 
 function fill(id, list, emptyMsg){
   const el = document.getElementById(id);
@@ -703,6 +782,9 @@ function findMatch(id){
   return [...(DATA.live||[]),...(DATA.upcoming||[]),...(DATA.finished||[]),...(DATA.featured||[])]
     .find(m => String(m.id)===String(id));
 }
+
+
+
 // async function openMatch(id){
 //   let m = findMatch(id);
 //   try{ m = await api('/public/matches/'+id); }catch(e){}
@@ -719,28 +801,11 @@ function findMatch(id){
 //   const servers = (m.extraStreams||[]).length
 //     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
 //         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
-        
-// const fixUrl = u => (u && /^https?:\/\//i.test(String(u).trim())) ? String(u).trim() : (u ? 'https://' + String(u).trim() : '#');
-
-//   const ext1 = fixUrl(m.extStream1 || m.ext_stream1);
-//   const ext2 = fixUrl(m.extStream2 || m.ext_stream2);
-//   const ext3 = fixUrl(m.extStream3 || m.ext_stream3);
-
-//   const externalLinksHTML = `
-//     <div style="margin-top:14px; padding:12px; background:var(--pitch); border:1px solid var(--line); border-radius:var(--radius-s);">
-//       <div style="font-weight:600; font-size:.88rem; margin-bottom:8px; color:var(--flood);">🔗 Watch on External Sites</div>
-//       <div class="share">
-//         <a class="btn sm primary" href="${esc(ext1)}" target="_blank" rel="noopener">Server 1 ↗</a>
-//         <a class="btn sm primary" href="${esc(ext2)}" target="_blank" rel="noopener">Server 2 ↗</a>
-//         <a class="btn sm primary" href="${esc(ext3)}" target="_blank" rel="noopener">Server 3 ↗</a>
-//       </div>
-//     </div>`;
 
 //   document.getElementById('mBody').innerHTML = `
 //     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
 //     ${player}
 //     ${servers}
-//     ${externalLinksHTML}
 //     <div class="meta" style="display:flex;justify-content:space-between;margin:14px 0;color:var(--muted);font-size:.88rem">
 //       <span>${badge(m.status)} ${esc(m.leagueName||'')}</span>
 //       <span>${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)} (${TZ})</span>
@@ -765,7 +830,6 @@ function findMatch(id){
 //   }));
 // }
 
-
 async function openMatch(id){
   let m = findMatch(id);
   try{ m = await api('/public/matches/'+id); }catch(e){}
@@ -779,9 +843,33 @@ async function openMatch(id){
         : m.status==='FINISHED' ? 'This match has finished.' :
           `Starts ${fmtDay(m.kickoffUtc)} at ${fmtTime(m.kickoffUtc)} ·${countdown(m.kickoffUtc)}`}</div></div>`;
 
-  const servers = (m.extraStreams||[]).length
-    ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
-        `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
+  // Build stream options list starting with Main Server if live
+  const streamList = [];
+  if (live && m.streamUrl) {
+    streamList.push({ label: 'Main Server', url: m.streamUrl });
+  }
+
+  // Add extStream1, extStream2, extStream3
+  const s1 = m.extStream1 || m.ext_stream1;
+  const s2 = m.extStream2 || m.ext_stream2;
+  const s3 = m.extStream3 || m.ext_stream3;
+
+  if (s1) streamList.push({ label: 'Server 1', url: s1 });
+  if (s2) streamList.push({ label: 'Server 2', url: s2 });
+  if (s3) streamList.push({ label: 'Server 3', url: s3 });
+
+  // Add any additional items from m.extraStreams array
+  if (Array.isArray(m.extraStreams)) {
+    m.extraStreams.forEach((s, i) => {
+      streamList.push({ label: s.label || (`Server ${streamList.length + 1}`), url: s.url });
+    });
+  }
+
+  // Render server switch buttons if more than one option exists
+  const servers = streamList.length > 1
+    ? `<div class="share" style="margin-top:12px">${streamList.map((s, i) =>
+        `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label)}</button>`).join('')}</div>`
+    : '';
 
   document.getElementById('mBody').innerHTML = `
     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
