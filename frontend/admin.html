@@ -475,59 +475,26 @@ function toLocalInput(iso){
   const d = new Date(iso), p = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
-// function editMatch(id){
-//   const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
-//   document.getElementById('addTitle').textContent = 'Edit match';
-//   const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
-//   v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
-//   v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
-//   v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
-//   v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
-//   v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
-// v('f_ext1', m.extStream1 || m.ext_stream1);
-// v('f_ext2', m.extStream2 || m.ext_stream2);
-// v('f_ext3', m.extStream3 || m.ext_stream3);
-//   document.getElementById('f_featured').checked = !!m.featured;
-//   document.getElementById('f_visible').checked = m.visible !== false;
-//   if(m.league) document.getElementById('f_league').value = m.league.id;
-//   document.querySelector('[data-tab="add"]').click();
-//   window.scrollTo({top:0,behavior:'smooth'});
-// }
-
-function editMatch(id) {
-  const m = CACHE.matches.find(x => String(x.id) === String(id)); 
-  if (!m) return;
-
+function editMatch(id){
+  const m = CACHE.matches.find(x=>String(x.id)===String(id)); if(!m) return;
   document.getElementById('addTitle').textContent = 'Edit match';
-  const v = (i, val) => document.getElementById(i).value = val == null ? '' : val;
-
-  v('f_id', m.id); 
-  v('f_home', m.homeTeam); 
-  v('f_away', m.awayTeam);
-  v('f_homeLogo', m.homeLogo); 
-  v('f_awayLogo', m.awayLogo);
-  v('f_kick', toLocalInput(m.kickoffUtc)); 
-  v('f_status', m.status);
-  v('f_hs', m.homeScore); 
-  v('f_as', m.awayScore); 
-  v('f_desc', m.description);
-  v('f_stream', m.streamUrl); 
-  v('f_backup', m.backupStreams); 
-  v('f_poster', m.posterUrl);
-
-  // External backup stream fields
-  v('f_ext1', m.extStream1 || m.ext_stream1);
-  v('f_ext2', m.extStream2 || m.ext_stream2);
-  v('f_ext3', m.extStream3 || m.ext_stream3);
-
+  const v = (i,val)=>document.getElementById(i).value = val==null?'':val;
+  v('f_id',m.id); v('f_home',m.homeTeam); v('f_away',m.awayTeam);
+  v('f_homeLogo',m.homeLogo); v('f_awayLogo',m.awayLogo);
+  v('f_kick',toLocalInput(m.kickoffUtc)); v('f_status',m.status);
+  v('f_hs',m.homeScore); v('f_as',m.awayScore); v('f_desc',m.description);
+  v('f_stream',m.streamUrl); v('f_backup',m.backupStreams); v('f_poster',m.posterUrl);
+v('f_ext1', m.extStream1 || m.ext_stream1);
+v('f_ext2', m.extStream2 || m.ext_stream2);
+v('f_ext3', m.extStream3 || m.ext_stream3);
   document.getElementById('f_featured').checked = !!m.featured;
   document.getElementById('f_visible').checked = m.visible !== false;
-  
-  if (m.league) document.getElementById('f_league').value = m.league.id;
-
+  if(m.league) document.getElementById('f_league').value = m.league.id;
   document.querySelector('[data-tab="add"]').click();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({top:0,behavior:'smooth'});
 }
+
+
 
 
 document.getElementById('clearForm').addEventListener('click', ()=>{
@@ -536,73 +503,29 @@ document.getElementById('clearForm').addEventListener('click', ()=>{
   document.getElementById('addTitle').textContent='Add a match';
 });
 
-// document.getElementById('saveMatch').addEventListener('click', async ()=>{
-//   const g = i => document.getElementById(i).value.trim();
-//   if(!g('f_home')||!g('f_away')||!g('f_kick')){ toast('Teams and kick-off time are needed'); return; }
-//   const payload = {
-//     homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
-//     description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
-//     homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
-//     // Line 510 in your screenshot:
-// streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
-// extStream1:g('f_ext1'),
-// extStream2:g('f_ext2'),
-// extStream3:g('f_ext3'),
-//     // streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
-//     featured:document.getElementById('f_featured').checked,
-//     visible:document.getElementById('f_visible').checked,
-//     leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null
-//   };
-//   const id = document.getElementById('f_id').value;
-//   try{
-//     await call('/admin/matches'+(id?'/'+id:''), {method:id?'PUT':'POST', body:JSON.stringify(payload)});
-//     toast(id?'Match updated':'Match added');
-//     document.getElementById('clearForm').click(); loadAll();
-//   }catch(e){ toast(e.message); }
-// });
-
-document.getElementById('saveMatch').addEventListener('click', async () => {
+document.getElementById('saveMatch').addEventListener('click', async ()=>{
   const g = i => document.getElementById(i).value.trim();
-  
-  if (!g('f_home') || !g('f_away') || !g('f_kick')) { 
-    toast('Teams and kick-off time are needed'); 
-    return; 
-  }
-  
+  if(!g('f_home')||!g('f_away')||!g('f_kick')){ toast('Teams and kick-off time are needed'); return; }
   const payload = {
-    homeTeam: g('f_home'), 
-    awayTeam: g('f_away'), 
-    homeLogo: g('f_homeLogo'), 
-    awayLogo: g('f_awayLogo'),
-    description: g('f_desc'), 
-    kickoffUtc: new Date(g('f_kick')).toISOString(), 
-    status: g('f_status'),
-    homeScore: g('f_hs') || null, 
-    awayScore: g('f_as') || null,
-    streamUrl: g('f_stream'), 
-    backupStreams: g('f_backup'), 
-    extStream1: g('f_ext1'),
-    extStream2: g('f_ext2'),
-    extStream3: g('f_ext3'),
-    posterUrl: g('f_poster'),
-    featured: document.getElementById('f_featured').checked,
-    visible: document.getElementById('f_visible').checked,
+    homeTeam:g('f_home'), awayTeam:g('f_away'), homeLogo:g('f_homeLogo'), awayLogo:g('f_awayLogo'),
+    description:g('f_desc'), kickoffUtc:new Date(g('f_kick')).toISOString(), status:g('f_status'),
+    homeScore:g('f_hs')||null, awayScore:g('f_as')||null,
+    // Line 510 in your screenshot:
+streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+extStream1:g('f_ext1'),
+extStream2:g('f_ext2'),
+extStream3:g('f_ext3'),
+    // streamUrl:g('f_stream'), backupStreams:g('f_backup'), posterUrl:g('f_poster'),
+    featured:document.getElementById('f_featured').checked,
+    visible:document.getElementById('f_visible').checked,
     leagueId: document.getElementById('f_league').value ? Number(document.getElementById('f_league').value) : null
   };
-
   const id = document.getElementById('f_id').value;
-
-  try {
-    await call('/admin/matches' + (id ? '/' + id : ''), {
-      method: id ? 'PUT' : 'POST', 
-      body: JSON.stringify(payload)
-    });
-    toast(id ? 'Match updated' : 'Match added');
-    document.getElementById('clearForm').click(); 
-    loadAll();
-  } catch (e) { 
-    toast(e.message); 
-  }
+  try{
+    await call('/admin/matches'+(id?'/'+id:''), {method:id?'PUT':'POST', body:JSON.stringify(payload)});
+    toast(id?'Match updated':'Match added');
+    document.getElementById('clearForm').click(); loadAll();
+  }catch(e){ toast(e.message); }
 });
 
 
@@ -731,26 +654,15 @@ function fillSettings(s){
   document.getElementById('pay_upi').value = s['payments.upiId'] || '';
   document.getElementById('pay_name').value = s['payments.payeeName'] || '';
 }
-// document.getElementById('saveSettings').addEventListener('click', async ()=>{
-//   const settings = {};
-//   document.querySelectorAll('[data-k]').forEach(el=> settings[el.dataset.k] = el.value);
-//   try{ await call('/admin/settings',{method:'PUT',body:JSON.stringify({settings})}); toast('Settings saved'); }
-//   catch(e){ toast(e.message); }
-// });
-
-document.getElementById('saveSettings').addEventListener('click', async () => {
+document.getElementById('saveSettings').addEventListener('click', async ()=>{
   const settings = {};
-  document.querySelectorAll('[data-k]').forEach(el => settings[el.dataset.k] = el.value);
-  try {
-    await call('/admin/settings', { method: 'PUT', body: JSON.stringify({ settings }) });
-    toast('Settings saved');
-  } catch (e) {
-    toast(e.message);
-  }
+  document.querySelectorAll('[data-k]').forEach(el=> settings[el.dataset.k] = el.value);
+  try{ await call('/admin/settings',{method:'PUT',body:JSON.stringify({settings})}); toast('Settings saved'); }
+  catch(e){ toast(e.message); }
 });
 
-/* --------- boot --------- */
-if (TOKEN) start();
+/* ---------- boot ---------- */
+if(TOKEN) start();
 </script>
 </body>
 </html>
