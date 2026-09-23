@@ -22,19 +22,6 @@ public final class Dtos {
     public record LeagueView(Long id, String name, String slug, String country,
                              String logoUrl, String sportSlug) {}
 
-//     public record MatchView(
-//             Long id, String homeTeam, String awayTeam, String homeLogo, String awayLogo,
-//             String description, Instant kickoffUtc, String status,
-//             String homeScore, String awayScore, String posterUrl,
-//             boolean featured, long views,
-//             String leagueName, String leagueSlug, String leagueLogo,
-//             String sportName, String sportSlug,
-//             /** Only filled when the match is actually live — otherwise null. */
-//             String streamUrl,
-//             List<StreamOption> extraStreams,
-//             String shareUrl
-//     ) {}
-
 public record MatchView(
             Long id, String homeTeam, String awayTeam, String homeLogo, String awayLogo,
             String description, Instant kickoffUtc, String status,
@@ -96,18 +83,9 @@ public record MatchView(
             @NotNull Instant kickoffUtc, String status,
             String homeScore, String awayScore,
             String streamUrl, String backupStreams, String posterUrl,
-            Boolean featured, Boolean visible, Long leagueId
+            Boolean featured, Boolean visible, Long leagueId,
+            String extStream1, String extStream2, String extStream3
     ) {}
-
-// public record MatchRequest(
-//             @NotBlank String homeTeam, @NotBlank String awayTeam,
-//             String homeLogo, String awayLogo, String description,
-//             @NotNull Instant kickoffUtc, String status,
-//             String homeScore, String awayScore,
-//             String streamUrl, String backupStreams, String posterUrl,
-//             Boolean featured, Boolean visible, Long leagueId,
-//             String extStream1, String extStream2, String extStream3
-//     ) {}
 
     public record LeagueRequest(@NotBlank String name, String slug, String country,
                                 String logoUrl, String externalCode,

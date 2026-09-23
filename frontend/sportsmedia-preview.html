@@ -26,22 +26,37 @@
   --ink:#08181c; --muted:#5b7379; --flood:#c2760a; --turf:#0e9c8c;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;width:100%;overflow-x:hidden}
 body{
   background:var(--pitch); color:var(--ink); font-family:var(--sans);
   font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;isolation:isolate;
 }
+body::before{
+  /* stadium backdrop: floodlight glow + pitch-line/net texture, no photos — keeps text legible everywhere */
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background-attachment:fixed;
+  background-image:
+    radial-gradient(1100px 620px at 50% -10%, color-mix(in srgb,var(--flood) 14%,transparent), transparent 60%),
+    radial-gradient(900px 500px at 100% 30%, color-mix(in srgb,var(--turf) 9%,transparent), transparent 65%),
+    radial-gradient(900px 500px at 0% 75%, color-mix(in srgb,var(--flood) 8%,transparent), transparent 65%),
+    repeating-linear-gradient(135deg, color-mix(in srgb,var(--turf) 5%,transparent) 0 2px, transparent 2px 46px),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Ccircle cx='60' cy='60' r='38' fill='none' stroke='%238fb0b5' stroke-opacity='0.05' stroke-width='1.4'/%3E%3Cpath d='M60 22 L76 34 L70 54 L50 54 L44 34 Z' fill='none' stroke='%238fb0b5' stroke-opacity='0.05' stroke-width='1.4'/%3E%3C/svg%3E"),
+    var(--pitch);
+  background-size:100% 100%,100% 100%,100% 100%,auto,120px 120px,auto;
+}
+:root[data-theme="light"] body::before{opacity:.6}
 a{color:inherit}
 button,input,select,textarea{font:inherit;color:inherit}
 img{max-width:100%}
-.shell{max-width:var(--shell);margin:0 auto;padding:0 20px}
+.shell{width:100%;max-width:var(--shell);margin:0 auto;padding:0 20px}
 h1,h2,h3,.cond{font-family:var(--cond);letter-spacing:.01em;margin:0}
 h2{font-size:1.65rem;font-weight:700}
 :focus-visible{outline:2px solid var(--flood);outline-offset:2px}
 
 /* ---------- header ---------- */
 header{
-  position:sticky;top:0;z-index:60;
+  width:100%;position:sticky;top:0;z-index:60;
   background:color-mix(in srgb,var(--pitch) 92%,transparent);
   backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
 }
@@ -143,7 +158,7 @@ section.block{padding:30px 0}
 
 /* ---------- ads ---------- */
 .ad{
-  border:1px dashed var(--line);border-radius:var(--radius-s);min-height:90px;
+  width:100%;border:1px dashed var(--line);border-radius:var(--radius-s);min-height:90px;
   display:grid;place-items:center;color:var(--muted);font-size:.8rem;margin:20px 0;overflow:hidden;
   background:color-mix(in srgb,var(--pitch-2) 60%,transparent)
 }
@@ -227,7 +242,7 @@ section.block{padding:30px 0}
 .tg{background:#2aa8e0;border-color:#2aa8e0;color:#041a24}
 
 /* ---------- footer ---------- */
-footer{border-top:1px solid var(--line);margin-top:40px;padding:34px 0 26px;background:var(--pitch-2)}
+footer{width:100%;border-top:1px solid var(--line);margin-top:40px;padding:34px 0 26px;background:var(--pitch-2)}
 .fgrid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:26px}
 footer h4{font-family:var(--cond);font-size:1.05rem;margin:0 0 10px}
 footer ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}
@@ -242,12 +257,38 @@ footer a:hover{color:var(--flood)}
 }
 .toast.show{opacity:1}
 @media (max-width:820px){
+  .shell{padding:0 14px}
   .board-body{grid-template-columns:1fr;gap:10px}
   .fgrid{grid-template-columns:1fr 1fr}
   nav.main{order:3;width:100%;margin:0;padding-bottom:8px}
-  .bar{height:auto;flex-wrap:wrap;padding-top:10px}
+  .bar{height:auto;flex-wrap:wrap;padding-top:10px;gap:10px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  section.block{padding:22px 0}
 }
-@media (max-width:520px){.fgrid{grid-template-columns:1fr}.score{font-size:2.5rem}}
+@media (max-width:520px){
+  .shell{padding:0 12px}
+  .fgrid{grid-template-columns:1fr}
+  .score{font-size:2.2rem}
+  .kick{font-size:1.5rem}
+  .grid{grid-template-columns:1fr}
+  h2{font-size:1.35rem}
+  .side .crest{width:46px;height:46px}
+  .side .tname{font-size:1.08rem}
+  .board-actions{flex-direction:column}
+  .board-actions .btn{width:100%}
+  .modal{width:96vw;max-height:94vh;border-radius:12px}
+  .modal-body{padding:14px}
+  .drawer{width:100vw}
+  .legal{flex-direction:column;gap:6px}
+  .join{width:94vw;padding:14px}
+  .icon-btn{width:34px;height:34px}
+  .cats{gap:7px}
+  .chip{padding:8px 13px;font-size:.85rem}
+}
+@media (max-width:360px){
+  .score{font-size:1.9rem}
+  .brand b{font-size:1.1rem}
+}
 </style>
 <!-- ============================================================
      THE ONE LINE YOU EDIT AFTER DEPLOYING
@@ -404,7 +445,7 @@ footer a:hover{color:var(--flood)}
       <input type="checkbox" id="setCountdown" checked></div>
     <div class="switch"><div><b>Join popup</b><small>WhatsApp and Telegram invite</small></div>
       <input type="checkbox" id="setPopup" checked></div>
-    <div class="switch"><div><b>Auto refresh</b><small>Reload scores every 60 seconds</small></div>
+    <div class="switch"><div><b>Auto refresh</b><small>Reload scores automatically — faster while a match is live</small></div>
       <input type="checkbox" id="setAuto" checked></div>
     <label class="field" style="margin-top:16px"><span>Backend address</span>
       <input id="setApi" placeholder="https://sportsmedia-api.onrender.com/api"></label>
@@ -454,7 +495,7 @@ const cfg = {
 };
 
 const TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || 'your local time';
-let DATA = null, filterSport = null, filterLeague = null, timers = [];
+let DATA = null, filterSport = null, filterLeague = null, timers = [], lastPoll = 0;
 
 /* ---------- demo fallback ---------- */
 function demo(){
@@ -717,6 +758,13 @@ function findMatch(id){
     .find(m => String(m.id)===String(id));
 }
 
+/* Admin-panel URLs may be pasted without a scheme — always give the anchor a safe absolute href. */
+function fixUrl(u){
+  u = (u||'').trim();
+  if(!u) return '';
+  return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+}
+
 async function openMatch(id){
   let m = findMatch(id);
   try{ m = await api('/public/matches/'+id); }catch(e){}
@@ -734,10 +782,23 @@ async function openMatch(id){
     ? `<div class="share" style="margin-top:12px">${m.extraStreams.map((s,i)=>
         `<button class="btn sm" data-server="${esc(s.url)}">${esc(s.label||('Server '+(i+2)))}</button>`).join('')}</div>` : '';
 
+  /* Fallback external redirect slots — set per match in the admin panel; open in a new tab. */
+  const extSlots = [
+    {label:'Server 1', url:m.extStream1}, {label:'Server 2', url:m.extStream2}, {label:'Server 3', url:m.extStream3}
+  ].filter(s => s.url && s.url.trim());
+  const externalLinksHTML = extSlots.length ? `
+    <div style="margin-top:14px;padding:12px;background:var(--pitch);border:1px solid var(--line);border-radius:var(--radius-s)">
+      <div style="font-weight:600;font-size:.88rem;margin-bottom:8px;color:var(--flood)">Alternative streams</div>
+      <div class="share">${extSlots.map(s =>
+        `<a class="btn sm primary" href="${esc(fixUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.label)} ↗</a>`).join('')}
+      </div>
+    </div>` : '';
+
   document.getElementById('mBody').innerHTML = `
     <div class="ad" id="ad-above-player" data-label="Ad space · above player"></div>
     ${player}
     ${servers}
+    ${externalLinksHTML}
     <div class="meta" style="display:flex;justify-content:space-between;margin:14px 0;color:var(--muted);font-size:.88rem">
       <span>${badge(m.status)} ${esc(m.leagueName||'')}</span>
       <span>${fmtDay(m.kickoffUtc)} · ${fmtTime(m.kickoffUtc)} (${TZ})</span>
@@ -975,7 +1036,13 @@ window.addEventListener('hashchange', route);
   await load(true);
   route();
   setupPopup();
-  setInterval(()=>{ if(cfg.auto) load(true); }, 60000);
+  /* Live matches get a faster poll so scores/status move without a manual reload. */
+  setInterval(()=>{
+    if(!cfg.auto) return;
+    const hasLive = DATA && DATA.live && DATA.live.length > 0;
+    const now = Date.now();
+    if(now - lastPoll >= (hasLive ? 20000 : 60000)){ lastPoll = now; load(true); }
+  }, 5000);
 })();
 </script>
 </body>
