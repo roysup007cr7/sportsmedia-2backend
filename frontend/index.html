@@ -526,6 +526,7 @@ async function fetchRealSportsNews() {
 
   // Render news cards
   if (articles.length > 0) {
+    newsGrid.dataset.realNewsLoaded = "true";
     newsGrid.innerHTML = articles.map(n => `
       <article class="match">
         <div class="meta"><span>${fmtDay(n.createdAt)}</span></div>
@@ -721,17 +722,28 @@ function render(){
   fill('gridNext', next, 'No fixtures scheduled yet.');
   fill('gridDone', done, 'No finished matches to show.');
 
-  document.getElementById('gridNews').innerHTML = (DATA.news||[]).length
-    ? DATA.news.map(n=>`<article class="match"><div class="meta"><span>${fmtDay(n.createdAt)}</span></div>
-        <h3 style="font-size:1.2rem">${esc(n.title)}</h3>
-        <p style="margin:0;color:var(--muted);font-size:.9rem">${esc(n.summary||'')}</p></article>`).join('')
-    : `<div class="empty">No news posted yet.</div>`;
+  // document.getElementById('gridNews').innerHTML = (DATA.news||[]).length
+  //   ? DATA.news.map(n=>`<article class="match"><div class="meta"><span>${fmtDay(n.createdAt)}</span></div>
+  //       <h3 style="font-size:1.2rem">${esc(n.title)}</h3>
+  //       <p style="margin:0;color:var(--muted);font-size:.9rem">${esc(n.summary||'')}</p></article>`).join('')
+  //   : `<div class="empty">No news posted yet.</div>`;
+
+const newsGrid = document.getElementById('gridNews');
+  if (newsGrid && !newsGrid.dataset.realNewsLoaded) {
+    newsGrid.innerHTML = (DATA.news||[]).length
+      ? DATA.news.map(n=>`<article class="match"><div class="meta"><span>${fmtDay(n.createdAt)}</span></div>
+          <h3 style="font-size:1.2rem">${esc(n.title)}</h3>
+          <p style="margin:0;color:var(--muted);font-size:.9rem">${esc(n.summary||'')}</p></article>`).join('')
+      : `<div class="empty">No news posted yet.</div>`;
+  }
 
   renderAds();
   renderSocials(s);
   renderPages(s);
   loadComments();
   tickCountdowns();
+
+
 }
 
 function fill(id, list, emptyMsg){
