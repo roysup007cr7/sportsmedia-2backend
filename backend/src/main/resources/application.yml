@@ -55,3 +55,10 @@ football:
     competitions: ${FOOTBALL_API_COMPETITIONS:WC,CL,BL1,DED,BSA,PD,FL1,ELC,PPL,EC,SA,PL}
     days-ahead: ${FOOTBALL_API_DAYS_AHEAD:14}
     cron: "${FOOTBALL_API_CRON:0 */30 * * * *}"
+
+    news:
+  api:
+    enabled: ${NEWS_API_ENABLED:true}
+    token: ${NEWS_API_TOKEN:6e7328cae4b140eab27bfb44326b9a10}
+    base-url: https://newsapi.org/v2
+    query: football OR soccer OR "Premier League" OR "La Liga"
