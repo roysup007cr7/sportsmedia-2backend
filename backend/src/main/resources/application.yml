@@ -36,11 +36,20 @@ app:
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5500,http://127.0.0.1:5500,https://*.vercel.app}
 
+# football:
+#   api:
+#     enabled: ${FOOTBALL_API_ENABLED:false}
+#     token: ${FOOTBALL_API_TOKEN:}
+#     base-url: ${FOOTBALL_API_BASE_URL:https://api.football-data.org/v4}
+#     competitions: ${FOOTBALL_API_COMPETITIONS:PD,CL,PL,SA,BL1}
+#     days-ahead: ${FOOTBALL_API_DAYS_AHEAD:14}
+#     cron: "${FOOTBALL_API_CRON:0 */30 * * * *}"
+
 football:
   api:
-    enabled: ${FOOTBALL_API_ENABLED:false}
-    token: ${FOOTBALL_API_TOKEN:}
+    enabled: ${FOOTBALL_API_ENABLED:true}
+    token: ${FOOTBALL_API_TOKEN:cd764ca97105491188898b7126b212b5}
     base-url: ${FOOTBALL_API_BASE_URL:https://api.football-data.org/v4}
-    competitions: ${FOOTBALL_API_COMPETITIONS:PD,CL,PL,SA,BL1}
+    competitions: ${FOOTBALL_API_COMPETITIONS:WC,CL,BL1,DED,BSA,PD,FL1,ELC,PPL,EC,SA,PL}
     days-ahead: ${FOOTBALL_API_DAYS_AHEAD:14}
     cron: "${FOOTBALL_API_CRON:0 */30 * * * *}"
