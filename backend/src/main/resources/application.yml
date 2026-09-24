@@ -56,7 +56,7 @@ football:
     days-ahead: ${FOOTBALL_API_DAYS_AHEAD:14}
     cron: "${FOOTBALL_API_CRON:0 */30 * * * *}"
 
-    news:
+news:
   api:
     enabled: ${NEWS_API_ENABLED:true}
     token: ${NEWS_API_TOKEN:6e7328cae4b140eab27bfb44326b9a10}
