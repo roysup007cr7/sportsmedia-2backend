@@ -479,52 +479,122 @@ const store = {
 };
 
 /* ---------- automated dual-feed news engine ---------- */
+// async function fetchRealSportsNews() {
+//   const newsGrid = document.getElementById('gridNews');
+//   if(!newsGrid) return;
+
+//   const backendUrl = (cfg.api || 'https://sportsmedia-api.onrender.com/api') + '/news';
+//   const rssBackupUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.skysports.com/rss/12040');
+
+//   let articles = [];
+
+//   // Primary Source: Try Spring Boot Backend (/api/news)
+//   try {
+//     const response = await fetch(backendUrl);
+//     if (response.ok) {
+//       const data = await response.json();
+//       if (data.articles && data.articles.length > 0) {
+//         articles = data.articles.slice(0, 6).map(item => ({
+//           title: item.title,
+//           summary: item.description || "Click read full story below to access full breaking analytical breakdowns.",
+//           url: item.url,
+//           createdAt: item.publishedAt || new Date().toISOString()
+//         }));
+//       }
+//     }
+//   } catch (backendError) {
+//     console.warn('Backend news unavailable, using RSS fallback:', backendError);
+//   }
+
+//   // Secondary Source: Fallback to Sky Sports RSS Feed
+//   if (articles.length === 0) {
+//     try {
+//       const rssResponse = await fetch(rssBackupUrl);
+//       const rssData = await rssResponse.json();
+//       if (rssData.status === 'ok' && rssData.items) {
+//         articles = rssData.items.slice(0, 6).map(item => ({
+//           title: item.title,
+//           summary: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 110) + '...',
+//           url: item.link,
+//           createdAt: item.pubDate || new Date().toISOString()
+//         }));
+//       }
+//     } catch (rssError) {
+//       console.error('RSS News fetch error:', rssError);
+//     }
+//   }
+
+//   // Render news cards
+//   if (articles.length > 0) {
+//     newsGrid.dataset.realNewsLoaded = "true";
+//     newsGrid.innerHTML = articles.map(n => `
+//       <article class="match">
+//         <div class="meta"><span>${fmtDay(n.createdAt)}</span></div>
+//         <h3 style="font-size:1.2rem">${esc(n.title)}</h3>
+//         <p style="margin:0 0 12px;color:var(--muted);font-size:.9rem">${esc(n.summary)}</p>
+//         ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener noreferrer" class="btn sm ghost" style="align-self:flex-start">Read Full Story →</a>` : ''}
+//       </article>
+//     `).join('');
+//   } else {
+//     newsGrid.innerHTML = `<div class="empty">No news available right now.</div>`;
+//   }
+// }
+
+
 async function fetchRealSportsNews() {
   const newsGrid = document.getElementById('gridNews');
-  if(!newsGrid) return;
+  if (!newsGrid) return;
 
   const backendUrl = (cfg.api || 'https://sportsmedia-api.onrender.com/api') + '/news';
   const rssBackupUrl = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://www.skysports.com/rss/12040');
 
   let articles = [];
 
-  // Primary Source: Try Spring Boot Backend (/api/news)
+  // 1. Try Spring Boot Backend with a 2.5-second abort controller timeout
   try {
-    const response = await fetch(backendUrl);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 2500);
+
+    const response = await fetch(backendUrl, { signal: controller.signal });
+    clearTimeout(timer);
+
     if (response.ok) {
       const data = await response.json();
-      if (data.articles && data.articles.length > 0) {
-        articles = data.articles.slice(0, 6).map(item => ({
+      const list = Array.isArray(data) ? data : (data.articles || []);
+      if (list.length > 0) {
+        articles = list.slice(0, 6).map(item => ({
           title: item.title,
-          summary: item.description || "Click read full story below to access full breaking analytical breakdowns.",
+          summary: item.description || item.summary || "Click read full story below for full analytical coverage.",
           url: item.url,
-          createdAt: item.publishedAt || new Date().toISOString()
+          createdAt: item.publishedAt || item.createdAt || new Date().toISOString()
         }));
       }
     }
   } catch (backendError) {
-    console.warn('Backend news unavailable, using RSS fallback:', backendError);
+    console.warn('Backend news took too long or offline, triggering instant RSS fallback');
   }
 
-  // Secondary Source: Fallback to Sky Sports RSS Feed
+  // 2. Fallback: Fetch Sky Sports RSS Feed immediately if backend failed or timed out
   if (articles.length === 0) {
     try {
       const rssResponse = await fetch(rssBackupUrl);
-      const rssData = await rssResponse.json();
-      if (rssData.status === 'ok' && rssData.items) {
-        articles = rssData.items.slice(0, 6).map(item => ({
-          title: item.title,
-          summary: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 110) + '...',
-          url: item.link,
-          createdAt: item.pubDate || new Date().toISOString()
-        }));
+      if (rssResponse.ok) {
+        const rssData = await rssResponse.json();
+        if (rssData.status === 'ok' && rssData.items) {
+          articles = rssData.items.slice(0, 6).map(item => ({
+            title: item.title,
+            summary: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 110) + '...',
+            url: item.link,
+            createdAt: item.pubDate || new Date().toISOString()
+          }));
+        }
       }
     } catch (rssError) {
       console.error('RSS News fetch error:', rssError);
     }
   }
 
-  // Render news cards
+  // 3. Render news cards
   if (articles.length > 0) {
     newsGrid.dataset.realNewsLoaded = "true";
     newsGrid.innerHTML = articles.map(n => `
@@ -539,6 +609,7 @@ async function fetchRealSportsNews() {
     newsGrid.innerHTML = `<div class="empty">No news available right now.</div>`;
   }
 }
+
 
 const cfg = {
   api: store.get('api', window.SM_API || 'https://sportsmedia-api.onrender.com/api'),
@@ -586,19 +657,50 @@ function demo(){
 }
 
 /* ---------- api ---------- */
-async function api(path, opts){
-  const res = await fetch(cfg.api + path, Object.assign({headers:{'Content-Type':'application/json'}}, opts||{}));
-  if(!res.ok) throw new Error('HTTP '+res.status);
-  return res.json();
+// async function api(path, opts){
+//   const res = await fetch(cfg.api + path, Object.assign({headers:{'Content-Type':'application/json'}}, opts||{}));
+//   if(!res.ok) throw new Error('HTTP '+res.status);
+//   return res.json();
+// }
+
+// async function load(silent){
+//   try{
+//     DATA = await api('/public/home');
+//     if(!DATA.settings) DATA.settings = {};
+//   }catch(e){
+//     DATA = demo();
+//     if(!silent) toast('Showing demo fixtures — backend not connected');
+//   }
+//   render();
+// }
+
+/* ---------- api ---------- */
+async function api(path, opts = {}) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3500); // 3.5s timeout for cold starts
+
+  try {
+    const res = await fetch(cfg.api + path, Object.assign({
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal
+    }, opts));
+    clearTimeout(timeoutId);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
+  }
 }
 
-async function load(silent){
-  try{
+async function load(silent) {
+  try {
     DATA = await api('/public/home');
-    if(!DATA.settings) DATA.settings = {};
-  }catch(e){
+    if (!DATA.settings) DATA.settings = {};
+  } catch(e) {
+    console.warn('Backend connection delayed or offline, loading fallback fixtures:', e);
     DATA = demo();
-    if(!silent) toast('Showing demo fixtures — backend not connected');
+    if (!silent) toast('Showing demo fixtures - backend connecting in background...');
   }
   render();
 }
