@@ -26,10 +26,10 @@ public class IslSyncService {
     @Value("${api-football.enabled:true}")
     private boolean enabled;
 
-    @Value("${api-football.key:24e721b245957d50afaa28d812a53baf}")
+    @Value("${api-football.key:3b8be5131amshec4623e52edf98bp1aecd5jsn82aa6eb1ec6a}")
     private String apiKey;
 
-    @Value("${api-football.base-url:https://v3.football.api-sports.io}")
+    @Value("${api-football.base-url:https://api-football-v1.p.rapidapi.com/v3}")
     private String baseUrl;
 
     private final MatchRepository matchRepo;
@@ -49,26 +49,27 @@ public class IslSyncService {
         syncMatches();
     }
 
-    @Scheduled(cron = "0 0 * * * *")
-    public void syncMatches() {
-        if (!enabled || apiKey == null || apiKey.isBlank()) return;
+@Scheduled(cron = "0 0 * * * *")
+public void syncMatches() {
+    if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
-        try {
-            Sport football = sportRepo.findBySlug("football")
-                    .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
+    try {
+        Sport football = sportRepo.findBySlug("football")
+                .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-            int currentYear = LocalDate.now().getYear();
+        int currentYear = LocalDate.now().getYear();
 
-            // 1. Sync Indian Super League (ID: 323)
-            syncLeagueBySeason(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
+        // 1. Sync Indian Super League (ID: 323) for current season
+        fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
 
-            // 2. Sync UEFA Nations League (ID: 5) - UPCOMING & LIVE ONLY
-            syncUpcomingAndLive(5, "UEFA Nations League", "nations-league", "Europe", football, String.valueOf(currentYear));
+        // 2. Sync UEFA Nations League (ID: 5) - query live and next 20 fixtures directly
+        fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
+        fetchAndSave(baseUrl + "/fixtures?league=5&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
 
-        } catch (Exception e) {
-            System.err.println("Error in syncMatches: " + e.getMessage());
-        }
+    } catch (Exception e) {
+        System.err.println("Error in syncMatches: " + e.getMessage());
     }
+}
 
     private void syncUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
         // Fetch LIVE matches first for current season
@@ -93,8 +94,10 @@ public class IslSyncService {
                             .active(true)
                             .build()));
 
+            // RapidAPI Proxy Headers
             HttpHeaders headers = new HttpHeaders();
-            headers.set("x-apisports-key", apiKey);
+            headers.set("x-rapidapi-key", apiKey);
+            headers.set("x-rapidapi-host", "api-football-v1.p.rapidapi.com");
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
