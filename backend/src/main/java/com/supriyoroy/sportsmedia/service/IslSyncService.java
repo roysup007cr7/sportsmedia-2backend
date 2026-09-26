@@ -45,7 +45,6 @@ public class IslSyncService {
         this.sportRepo = sportRepo;
     }
 
-    // Runs once every hour to conserve the 100 requests/day free tier limit
     @Scheduled(cron = "0 0 * * * *")
     public void syncIslMatches() {
         if (!enabled || apiKey == null || apiKey.isBlank()) return;
@@ -85,9 +84,12 @@ public class IslSyncService {
                         String externalId = "api_football_" + fixture.get("id").asText();
                         String statusShort = fixture.get("status").get("short").asText();
 
-                        MatchStatus status = MatchStatus.TIMED;
-                        if (statusShort.matches("1H|2H|HT|ET|P|LIVE")) status = MatchStatus.IN_PLAY;
-                        else if (statusShort.equals("FT") || statusShort.equals("AET") || statusShort.equals("PEN")) status = MatchStatus.FINISHED;
+                        MatchStatus status = MatchStatus.UPCOMING;
+                        if (statusShort.matches("1H|2H|HT|ET|P|LIVE")) {
+                            status = MatchStatus.LIVE;
+                        } else if (statusShort.matches("FT|AET|PEN")) {
+                            status = MatchStatus.FINISHED;
+                        }
 
                         MatchEntity match = matchRepo.findByExternalId(externalId).orElse(new MatchEntity());
                         match.setExternalId(externalId);
