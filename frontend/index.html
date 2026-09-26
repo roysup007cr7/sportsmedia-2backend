@@ -694,15 +694,43 @@ async function api(path, opts = {}) {
 }
 
 async function load(silent) {
-  try {
-    DATA = await api('/public/home');
-    if (!DATA.settings) DATA.settings = {};
-  } catch(e) {
-    console.warn('Backend connection delayed or offline, loading fallback fixtures:', e);
+  // Step 1: Render fallback demo fixtures instantly so the UI isn't blank
+  if (!DATA) {
     DATA = demo();
-    if (!silent) toast('Showing demo fixtures - backend connecting in background...');
+    render();
   }
-  render();
+
+  // Step 2: Function to attempt fetching real data from Render backend
+  async function fetchLiveData() {
+    try {
+      const liveData = await api('/public/home');
+      if (liveData && (liveData.matches || liveData.liveMatches)) {
+        DATA = liveData;
+        if (!DATA.settings) DATA.settings = {};
+        render(); // Overwrite demo data with real fixtures from backend
+        return true;
+      }
+    } catch(e) {
+      console.warn('Backend waking up or unreachable:', e);
+      return false;
+    }
+  }
+
+  // Step 3: Try fetching immediately
+  const success = await fetchLiveData();
+
+  // Step 4: If Render was cold/sleeping, retry every 5 seconds (up to 6 times)
+  if (!success) {
+    if (!silent) toast('Waking up live backend server...');
+    let retries = 0;
+    const retryInterval = setInterval(async () => {
+      retries++;
+      const isConnected = await fetchLiveData();
+      if (isConnected || retries >= 6) {
+        clearInterval(retryInterval); // Stop polling once connected or max retries reached
+      }
+    }, 5000);
+  }
 }
 
 /* ---------- time in the viewer's own zone ---------- */
