@@ -49,37 +49,29 @@ public class IslSyncService {
         syncMatches();
     }
 
-@Scheduled(cron = "0 0 * * * *")
-public void syncMatches() {
-    if (!enabled || apiKey == null || apiKey.isBlank()) return;
+    @Scheduled(cron = "0 0 * * * *")
+    public void syncMatches() {
+        if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
-    try {
-        Sport football = sportRepo.findBySlug("football")
-                .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
+        try {
+            Sport football = sportRepo.findBySlug("football")
+                    .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-        int currentYear = LocalDate.now().getYear();
+            int currentYear = LocalDate.now().getYear();
+            int previousYear = currentYear - 1;
 
-        // 1. Sync Indian Super League (ID: 323) for current season
-        fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
+            // 1. Sync Indian Super League (ID: 323) for active season start years
+            fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
+            fetchAndSave(baseUrl + "/fixtures?league=323&season=" + previousYear, 323, "Indian Super League", "isl", "India", football);
 
-        // 2. Sync UEFA Nations League (ID: 5) - query live and next 20 fixtures directly
-        fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
-        fetchAndSave(baseUrl + "/fixtures?league=5&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
+            // 2. Sync UEFA Nations League (ID: 5) - query live and next 20 fixtures with active season parameters
+            fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
+            fetchAndSave(baseUrl + "/fixtures?league=5&season=" + previousYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
+            fetchAndSave(baseUrl + "/fixtures?league=5&season=" + currentYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
 
-    } catch (Exception e) {
-        System.err.println("Error in syncMatches: " + e.getMessage());
-    }
-}
-
-    private void syncUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
-        // Fetch LIVE matches first for current season
-        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season + "&live=all", apiLeagueId, name, slug, country, sport);
-        // Fetch UPCOMING matches only (next 20 fixtures) for current season
-        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season + "&next=20", apiLeagueId, name, slug, country, sport);
-    }
-
-    private void syncLeagueBySeason(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
-        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season, apiLeagueId, name, slug, country, sport);
+        } catch (Exception e) {
+            System.err.println("Error in syncMatches: " + e.getMessage());
+        }
     }
 
     private void fetchAndSave(String url, int apiLeagueId, String name, String slug, String country, Sport sport) {
@@ -94,18 +86,18 @@ public void syncMatches() {
                             .active(true)
                             .build()));
 
-            // RapidAPI Proxy Headers
             HttpHeaders headers = new HttpHeaders();
             headers.set("x-rapidapi-key", apiKey);
             headers.set("x-rapidapi-host", "api-football-v1.p.rapidapi.com");
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
+            
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode responseArr = root.get("response");
 
-                if (responseArr != null && responseArr.isArray()) {
+                if (responseArr != null && responseArr.isArray() && responseArr.size() > 0) {
                     for (JsonNode item : responseArr) {
                         JsonNode fixture = item.get("fixture");
                         JsonNode teams = item.get("teams");
@@ -138,7 +130,7 @@ public void syncMatches() {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Sync Error for " + name + ": " + e.getMessage());
+            System.err.println("Sync Error for " + name + " (" + url + "): " + e.getMessage());
         }
     }
 }
