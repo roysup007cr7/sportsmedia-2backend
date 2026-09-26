@@ -17,7 +17,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Service
 public class IslSyncService {
@@ -46,10 +45,10 @@ public class IslSyncService {
         this.sportRepo = sportRepo;
     }
 
-    // Runs once every hour to conserve the 100 requests/day free limit
+    // Runs once every hour to conserve the 100 requests/day free tier limit
     @Scheduled(cron = "0 0 * * * *")
     public void syncIslMatches() {
-        if (!enabled || apiKey.isBlank()) return;
+        if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
         try {
             Sport football = sportRepo.findBySlug("football")
@@ -86,8 +85,8 @@ public class IslSyncService {
                         String externalId = "api_football_" + fixture.get("id").asText();
                         String statusShort = fixture.get("status").get("short").asText();
 
-                        MatchStatus status = MatchStatus.SCHEDULED;
-                        if (statusShort.matches("1H|2H|HT|ET|P|LIVE")) status = MatchStatus.LIVE;
+                        MatchStatus status = MatchStatus.TIMED;
+                        if (statusShort.matches("1H|2H|HT|ET|P|LIVE")) status = MatchStatus.IN_PLAY;
                         else if (statusShort.equals("FT") || statusShort.equals("AET") || statusShort.equals("PEN")) status = MatchStatus.FINISHED;
 
                         MatchEntity match = matchRepo.findByExternalId(externalId).orElse(new MatchEntity());
@@ -96,12 +95,11 @@ public class IslSyncService {
                         match.setHomeLogo(teams.get("home").get("logo").asText());
                         match.setAwayTeam(teams.get("away").get("name").asText());
                         match.setAwayLogo(teams.get("away").get("logo").asText());
-                        match.setHomeScore(goals.get("home").isNull() ? null : goals.get("home").asInt());
-                        match.setAwayScore(goals.get("away").isNull() ? null : goals.get("away").asInt());
+                        match.setHomeScore(goals.get("home").isNull() ? null : goals.get("home").asText());
+                        match.setAwayScore(goals.get("away").isNull() ? null : goals.get("away").asText());
                         match.setStatus(status);
                         match.setKickoffUtc(Instant.parse(fixture.get("date").asText()));
                         match.setLeague(isl);
-                        match.setSport(football);
 
                         matchRepo.save(match);
                     }
