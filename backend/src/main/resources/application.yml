@@ -67,8 +67,8 @@ news:
     base-url: https://newsapi.org/v2
     query: football OR soccer OR "Premier League" OR "La Liga"
 
-    api-football:
+api-football:
   enabled: ${API_FOOTBALL_ENABLED:true}
-  key: ${API_FOOTBALL_KEY:24e721b245957d50afaa28d812a53baf}
-  base-url: https://v3.football.api-sports.io
+  key: ${API_FOOTBALL_KEY:3b8be5131amshec4623e52edf98bp1aecd5jsn82aa6eb1ec6a}
+  base-url: https://api-football-v1.p.rapidapi.com/v3
   isl-league-id: 323
