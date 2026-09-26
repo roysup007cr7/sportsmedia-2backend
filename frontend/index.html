@@ -706,42 +706,45 @@ async function api(path, opts = {}) {
 // }
 
 async function load(silent) {
-  // 1. Render demo fallback instantly
+  // 1. Initial fallback: Show demo only if no data exists at all
   if (!DATA) {
     DATA = demo();
     render();
   }
 
-  // 2. Fetch live data from backend
-  async function fetchLiveData() {
-    try {
-      const liveData = await api('/public/home');
+  // 2. Fetch live backend data
+  try {
+    const liveData = await api('/public/home');
+    if (liveData && typeof liveData === 'object') {
+      // Unset demo mode and apply live backend data
+      liveData.demo = false;
+      DATA = liveData;
+      if (!DATA.settings) DATA.settings = {};
       
-      // Accept response as long as it contains items, live, next, or matches
-      if (liveData && (liveData.items || liveData.live || liveData.next || liveData.matches || liveData.hero)) {
-        DATA = liveData;
-        if (!DATA.settings) DATA.settings = {};
-        render(); // Overwrite demo data with real backend data
-        return true;
-      }
-    } catch(e) {
-      console.warn('Backend endpoint error:', e);
-      return false;
+      // Force UI re-render with live fixtures
+      render();
+      return;
     }
+  } catch (err) {
+    console.warn('Backend loading delayed, retaining local state:', err);
   }
 
-  // 3. Trigger immediate fetch & retry loop
-  const success = await fetchLiveData();
-  if (!success) {
-    let retries = 0;
-    const retryInterval = setInterval(async () => {
-      retries++;
-      const isConnected = await fetchLiveData();
-      if (isConnected || retries >= 5) {
-        clearInterval(retryInterval);
+  // 3. Retry loop if server was cold starting
+  let retries = 0;
+  const timer = setInterval(async () => {
+    retries++;
+    try {
+      const liveData = await api('/public/home');
+      if (liveData && typeof liveData === 'object') {
+        liveData.demo = false;
+        DATA = liveData;
+        if (!DATA.settings) DATA.settings = {};
+        render();
+        clearInterval(timer);
       }
-    }, 3000);
-  }
+    } catch(e) {}
+    if (retries >= 6) clearInterval(timer);
+  }, 4000);
 }
 
 /* ---------- time in the viewer's own zone ---------- */
@@ -799,30 +802,74 @@ function matchCard(m){
   </article>`;
 }
 
+// function renderHero(){
+//   const m = (DATA.live[0]) || (DATA.featured||[])[0] || DATA.upcoming[0];
+//   const el = document.getElementById('hero');
+//   if(!m){ el.innerHTML=''; return; }
+//   const live = m.status==='LIVE';
+//   const crest = u => u ? `<img class="crest" src="${esc(u)}" alt="">` : `<span class="crest">⚽</span>`;
+//   el.innerHTML = `
+//   <div class="board">
+//     <div class="board-top">
+//       <span class="comp">${esc(m.leagueName||'')}${m.description?' · '+esc(m.description):''}</span>
+//       ${badge(m.status)}
+//     </div>
+//     <div class="board-body">
+//       <div class="side">${crest(m.homeLogo)}<span class="tname">${esc(m.homeTeam)}</span></div>
+//       <div class="mid">
+//         ${live || m.status==='FINISHED'
+//           ? `<div class="score">${esc(m.homeScore??'0')} <span style="color:var(--muted)">:</span> ${esc(m.awayScore??'0')}</div>`
+//           : `<div class="kick">${fmtTime(m.kickoffUtc)}</div>`}
+//         <small>${live?'Second half under way':`${fmtDay(m.kickoffUtc)} ·${TZ}`}</small>
+//       </div>
+//       <div class="side">${crest(m.awayLogo)}<span class="tname">${esc(m.awayTeam)}</span></div>
+//     </div>
+//     <div class="board-actions">
+//       <button class="btn primary" data-open="${m.id}">${live?'Watch this match':'Match details'}</button>
+//       <button class="btn" data-share="${m.id}">Share match</button>
+//       <a class="btn ghost" href="#next">See full schedule</a>
+//     </div>
+//   </div>`;
+// }
+
 function renderHero(){
-  const m = (DATA.live[0]) || (DATA.featured||[])[0] || DATA.upcoming[0];
   const el = document.getElementById('hero');
-  if(!m){ el.innerHTML=''; return; }
-  const live = m.status==='LIVE';
+  if (!el || !DATA) return;
+
+  // Safely extract arrays regardless of key names from backend
+  const liveArr = Array.isArray(DATA.live) ? DATA.live : (DATA.liveMatches || []);
+  const nextArr = Array.isArray(DATA.next) ? DATA.next : (Array.isArray(DATA.upcoming) ? DATA.upcoming : (Array.isArray(DATA.items) ? DATA.items : (Array.isArray(DATA.matches) ? DATA.matches : [])));
+  const featArr = Array.isArray(DATA.featured) ? DATA.featured : [];
+
+  // Pick the best match for the Hero scoreboard
+  const m = liveArr[0] || featArr[0] || nextArr[0];
+
+  if (!m) { 
+    el.innerHTML = ''; 
+    return; 
+  }
+
+  const live = m.status === 'LIVE' || m.status === 'IN_PLAY';
   const crest = u => u ? `<img class="crest" src="${esc(u)}" alt="">` : `<span class="crest">⚽</span>`;
+  
   el.innerHTML = `
   <div class="board">
     <div class="board-top">
-      <span class="comp">${esc(m.leagueName||'')}${m.description?' · '+esc(m.description):''}</span>
-      ${badge(m.status)}
+      <span class="comp">${esc(m.leagueName || m.competition || '')}${m.description ? ' · ' + esc(m.description) : ''}</span>
+      ${typeof badge === 'function' ? badge(m.status) : `<span class="badge">${esc(m.status || 'UPCOMING')}</span>`}
     </div>
     <div class="board-body">
-      <div class="side">${crest(m.homeLogo)}<span class="tname">${esc(m.homeTeam)}</span></div>
+      <div class="side">${crest(m.homeLogo || m.homeCrest)}<span class="tname">${esc(m.homeTeam || m.homeName || 'Home')}</span></div>
       <div class="mid">
-        ${live || m.status==='FINISHED'
-          ? `<div class="score">${esc(m.homeScore??'0')} <span style="color:var(--muted)">:</span> ${esc(m.awayScore??'0')}</div>`
-          : `<div class="kick">${fmtTime(m.kickoffUtc)}</div>`}
-        <small>${live?'Second half under way':`${fmtDay(m.kickoffUtc)} ·${TZ}`}</small>
+        ${live || m.status === 'FINISHED'
+          ? `<div class="score">${esc(m.homeScore ?? '0')} <span style="color:var(--muted)">:</span> ${esc(m.awayScore ?? '0')}</div>`
+          : `<div class="kick">${fmtTime(m.kickoffUtc || m.startTime || new Date().toISOString())}</div>`}
+        <small>${live ? 'Second half under way' : `${fmtDay(m.kickoffUtc \vert{}\vert{} m.startTime \vert{}\vert{} new Date().toISOString())} ·${TZ}`}</small>
       </div>
-      <div class="side">${crest(m.awayLogo)}<span class="tname">${esc(m.awayTeam)}</span></div>
+      <div class="side">${crest(m.awayLogo || m.awayCrest)}<span class="tname">${esc(m.awayTeam || m.awayName || 'Away')}</span></div>
     </div>
     <div class="board-actions">
-      <button class="btn primary" data-open="${m.id}">${live?'Watch this match':'Match details'}</button>
+      <button class="btn primary" data-open="${m.id}">${live ? 'Watch this match' : 'Match details'}</button>
       <button class="btn" data-share="${m.id}">Share match</button>
       <a class="btn ghost" href="#next">See full schedule</a>
     </div>
