@@ -60,25 +60,25 @@ public class IslSyncService {
             int currentYear = LocalDate.now().getYear();
 
             // 1. Sync Indian Super League (ID: 323)
-            syncLeague(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
+            syncLeagueBySeason(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
 
-            // 2. Sync UEFA Nations League (ID: 5) - fetch upcoming next 20 matches instead of historical 2024 data
-            syncUpcomingLeagueMatches(5, "UEFA Nations League", "nations-league", "Europe", football, 20);
+            // 2. Sync UEFA Nations League (ID: 5) - UPCOMING & LIVE ONLY
+            syncUpcomingAndLive(5, "UEFA Nations League", "nations-league", "Europe", football);
 
         } catch (Exception e) {
             System.err.println("Error in syncMatches: " + e.getMessage());
         }
     }
 
-    private void syncLeague(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
-        String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season;
-        fetchAndSave(url, apiLeagueId, name, slug, country, sport);
+    private void syncUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport) {
+        // Fetch LIVE matches first
+        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&live=all", apiLeagueId, name, slug, country, sport);
+        // Fetch UPCOMING matches only (next 20 fixtures)
+        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&next=20", apiLeagueId, name, slug, country, sport);
     }
 
-    private void syncUpcomingLeagueMatches(int apiLeagueId, String name, String slug, String country, Sport sport, int nextCount) {
-        // Fetch only the upcoming 'next' games to avoid pulling past completed seasons
-        String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&next=" + nextCount;
-        fetchAndSave(url, apiLeagueId, name, slug, country, sport);
+    private void syncLeagueBySeason(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
+        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season, apiLeagueId, name, slug, country, sport);
     }
 
     private void fetchAndSave(String url, int apiLeagueId, String name, String slug, String country, Sport sport) {
@@ -108,16 +108,16 @@ public class IslSyncService {
                         JsonNode teams = item.get("teams");
                         JsonNode goals = item.get("goals");
 
-                        String externalId = "api_football_" + fixture.get("id").asText();
                         String statusShort = fixture.get("status").get("short").asText();
 
-                        MatchStatus status = MatchStatus.UPCOMING;
-                        if (statusShort.matches("1H|2H|HT|ET|P|LIVE")) {
-                            status = MatchStatus.LIVE;
-                        } else if (statusShort.matches("FT|AET|PEN")) {
-                            status = MatchStatus.FINISHED;
+                        // SKIP FINISHED MATCHES
+                        if (statusShort.matches("FT|AET|PEN")) {
+                            continue;
                         }
 
+                        MatchStatus status = statusShort.matches("1H|2H|HT|ET|P|LIVE") ? MatchStatus.LIVE : MatchStatus.UPCOMING;
+
+                        String externalId = "api_football_" + fixture.get("id").asText();
                         MatchEntity match = matchRepo.findByExternalId(externalId).orElse(new MatchEntity());
                         match.setExternalId(externalId);
                         match.setHomeTeam(teams.get("home").get("name").asText());
