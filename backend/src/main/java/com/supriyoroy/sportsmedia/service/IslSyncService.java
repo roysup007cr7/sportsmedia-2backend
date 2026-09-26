@@ -24,14 +24,11 @@ public class IslSyncService {
     @Value("${api-football.enabled:true}")
     private boolean enabled;
 
-    @Value("${api-football.key:}")
+    @Value("${api-football.key:24e721b245957d50afaa28d812a53baf}")
     private String apiKey;
 
     @Value("${api-football.base-url:https://v3.football.api-sports.io}")
     private String baseUrl;
-
-    @Value("${api-football.isl-league-id:323}")
-    private int islLeagueId;
 
     private final MatchRepository matchRepo;
     private final LeagueRepository leagueRepo;
@@ -45,26 +42,35 @@ public class IslSyncService {
         this.sportRepo = sportRepo;
     }
 
+    // Runs once every hour (2 leagues = 48 requests/day, well under your 100 limit)
     @Scheduled(cron = "0 0 * * * *")
-    public void syncIslMatches() {
+    public void syncMatches() {
         if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
-        try {
-            Sport football = sportRepo.findBySlug("football")
-                    .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
+        Sport football = sportRepo.findBySlug("football")
+                .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-            League isl = leagueRepo.findBySlug("isl")
+        // 1. Sync Indian Super League (ID: 323)
+        syncLeague(323, "Indian Super League", "isl", "India", football);
+
+        // 2. Sync UEFA Nations League (ID: 5)
+        syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football);
+    }
+
+    private void syncLeague(int apiLeagueId, String name, String slug, String country, Sport sport) {
+        try {
+            League league = leagueRepo.findBySlug(slug)
                     .orElseGet(() -> leagueRepo.save(League.builder()
-                            .name("Indian Super League")
-                            .slug("isl")
-                            .country("India")
-                            .externalCode("323")
-                            .sport(football)
+                            .name(name)
+                            .slug(slug)
+                            .country(country)
+                            .externalCode(String.valueOf(apiLeagueId))
+                            .sport(sport)
                             .active(true)
                             .build()));
 
             int currentYear = LocalDate.now().getYear();
-            String url = baseUrl + "/fixtures?league=" + islLeagueId + "&season=" + currentYear;
+            String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + currentYear;
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("x-apisports-key", apiKey);
@@ -101,14 +107,14 @@ public class IslSyncService {
                         match.setAwayScore(goals.get("away").isNull() ? null : goals.get("away").asText());
                         match.setStatus(status);
                         match.setKickoffUtc(Instant.parse(fixture.get("date").asText()));
-                        match.setLeague(isl);
+                        match.setLeague(league);
 
                         matchRepo.save(match);
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("ISL Sync Error: " + e.getMessage());
+            System.err.println("Sync Error for " + name + ": " + e.getMessage());
         }
     }
 }
