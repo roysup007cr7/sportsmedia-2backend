@@ -44,7 +44,7 @@ public class IslSyncService {
         this.sportRepo = sportRepo;
     }
 
-    // Runs automatically upon server startup
+    // Trigger sync immediately upon application startup
     @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
         syncMatches();
@@ -59,12 +59,12 @@ public class IslSyncService {
             Sport football = sportRepo.findBySlug("football")
                     .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-            // 1. Sync Indian Super League (ID: 323)
             int currentYear = LocalDate.now().getYear();
+
+            // 1. Sync Indian Super League (ID: 323)
             syncLeague(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
 
-            // 2. Sync UEFA Nations League (ID: 5) - query active season cycle
-            syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football, "2024");
+            // 2. Sync UEFA Nations League (ID: 5)
             syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football, String.valueOf(currentYear));
 
         } catch (Exception e) {
@@ -95,7 +95,7 @@ public class IslSyncService {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode responseArr = root.get("response");
 
-                if (responseArr != null && responseArr.isArray() && responseArr.size() > 0) {
+                if (responseArr != null && responseArr.isArray()) {
                     for (JsonNode item : responseArr) {
                         JsonNode fixture = item.get("fixture");
                         JsonNode teams = item.get("teams");
