@@ -66,3 +66,9 @@ news:
     token: ${NEWS_API_TOKEN:6e7328cae4b140eab27bfb44326b9a10}
     base-url: https://newsapi.org/v2
     query: football OR soccer OR "Premier League" OR "La Liga"
+
+    api-football:
+  enabled: ${API_FOOTBALL_ENABLED:true}
+  key: ${API_FOOTBALL_KEY:24e721b245957d50afaa28d812a53baf}
+  base-url: https://v3.football.api-sports.io
+  isl-league-id: 323
