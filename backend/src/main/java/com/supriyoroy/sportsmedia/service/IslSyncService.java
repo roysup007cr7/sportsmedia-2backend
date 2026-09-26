@@ -63,18 +63,18 @@ public class IslSyncService {
             syncLeagueBySeason(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
 
             // 2. Sync UEFA Nations League (ID: 5) - UPCOMING & LIVE ONLY
-            syncUpcomingAndLive(5, "UEFA Nations League", "nations-league", "Europe", football);
+            syncUpcomingAndLive(5, "UEFA Nations League", "nations-league", "Europe", football, String.valueOf(currentYear));
 
         } catch (Exception e) {
             System.err.println("Error in syncMatches: " + e.getMessage());
         }
     }
 
-    private void syncUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport) {
-        // Fetch LIVE matches first
-        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&live=all", apiLeagueId, name, slug, country, sport);
-        // Fetch UPCOMING matches only (next 20 fixtures)
-        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&next=20", apiLeagueId, name, slug, country, sport);
+    private void syncUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
+        // Fetch LIVE matches first for current season
+        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season + "&live=all", apiLeagueId, name, slug, country, sport);
+        // Fetch UPCOMING matches only (next 20 fixtures) for current season
+        fetchAndSave(baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season + "&next=20", apiLeagueId, name, slug, country, sport);
     }
 
     private void syncLeagueBySeason(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
