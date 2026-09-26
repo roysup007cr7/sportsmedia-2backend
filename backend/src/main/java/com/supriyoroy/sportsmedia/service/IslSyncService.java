@@ -44,13 +44,11 @@ public class IslSyncService {
         this.sportRepo = sportRepo;
     }
 
-    // Trigger sync immediately upon application startup
     @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
         syncMatches();
     }
 
-    // Scheduled hourly run
     @Scheduled(cron = "0 0 * * * *")
     public void syncMatches() {
         if (!enabled || apiKey == null || apiKey.isBlank()) return;
@@ -64,8 +62,8 @@ public class IslSyncService {
             // 1. Sync Indian Super League (ID: 323)
             syncLeague(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
 
-            // 2. Sync UEFA Nations League (ID: 5)
-            syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football, String.valueOf(currentYear));
+            // 2. Sync UEFA Nations League (ID: 5) - fetch upcoming next 20 matches instead of historical 2024 data
+            syncUpcomingLeagueMatches(5, "UEFA Nations League", "nations-league", "Europe", football, 20);
 
         } catch (Exception e) {
             System.err.println("Error in syncMatches: " + e.getMessage());
@@ -73,6 +71,17 @@ public class IslSyncService {
     }
 
     private void syncLeague(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
+        String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season;
+        fetchAndSave(url, apiLeagueId, name, slug, country, sport);
+    }
+
+    private void syncUpcomingLeagueMatches(int apiLeagueId, String name, String slug, String country, Sport sport, int nextCount) {
+        // Fetch only the upcoming 'next' games to avoid pulling past completed seasons
+        String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&next=" + nextCount;
+        fetchAndSave(url, apiLeagueId, name, slug, country, sport);
+    }
+
+    private void fetchAndSave(String url, int apiLeagueId, String name, String slug, String country, Sport sport) {
         try {
             League league = leagueRepo.findBySlug(slug)
                     .orElseGet(() -> leagueRepo.save(League.builder()
@@ -83,8 +92,6 @@ public class IslSyncService {
                             .sport(sport)
                             .active(true)
                             .build()));
-
-            String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season;
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("x-apisports-key", apiKey);
@@ -128,7 +135,7 @@ public class IslSyncService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Sync Error for " + name + " (Season " + season + "): " + e.getMessage());
+            System.err.println("Sync Error for " + name + ": " + e.getMessage());
         }
     }
 }
