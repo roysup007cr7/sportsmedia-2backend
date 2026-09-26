@@ -51,7 +51,10 @@ public class IslSyncService {
 
     @Scheduled(cron = "0 0 * * * *")
     public void syncMatches() {
-        if (!enabled || apiKey == null || apiKey.isBlank()) return;
+        if (!enabled || apiKey == null || apiKey.isBlank()) {
+            System.out.println("IslSyncService skipped: enabled=" + enabled + ", keyPresent=" + (apiKey != null && !apiKey.isBlank()));
+            return;
+        }
 
         try {
             Sport football = sportRepo.findBySlug("football")
@@ -60,17 +63,22 @@ public class IslSyncService {
             int currentYear = LocalDate.now().getYear();
             int previousYear = currentYear - 1;
 
-            // 1. Sync Indian Super League (ID: 323) for active season start years
+            System.out.println("Starting fixture sync via RapidAPI...");
+
+            // 1. Sync Indian Super League (ID: 323)
             fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
             fetchAndSave(baseUrl + "/fixtures?league=323&season=" + previousYear, 323, "Indian Super League", "isl", "India", football);
 
-            // 2. Sync UEFA Nations League (ID: 5) - query live and next 20 fixtures with active season parameters
+            // 2. Sync UEFA Nations League (ID: 5)
             fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
             fetchAndSave(baseUrl + "/fixtures?league=5&season=" + previousYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
             fetchAndSave(baseUrl + "/fixtures?league=5&season=" + currentYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
 
+            System.out.println("Fixture sync completed successfully.");
+
         } catch (Exception e) {
-            System.err.println("Error in syncMatches: " + e.getMessage());
+            System.err.println("Fatal error during syncMatches: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -92,18 +100,22 @@ public class IslSyncService {
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode responseArr = root.get("response");
 
                 if (responseArr != null && responseArr.isArray() && responseArr.size() > 0) {
+                    int count = 0;
                     for (JsonNode item : responseArr) {
                         JsonNode fixture = item.get("fixture");
                         JsonNode teams = item.get("teams");
                         JsonNode goals = item.get("goals");
 
-                        String statusShort = fixture.get("status").get("short").asText();
+                        if (fixture == null || teams == null) continue;
+
+                        String statusShort = fixture.get("status") != null && fixture.get("status").get("short") != null 
+                                ? fixture.get("status").get("short").asText() : "";
 
                         // SKIP FINISHED MATCHES
                         if (statusShort.matches("FT|AET|PEN")) {
@@ -119,15 +131,21 @@ public class IslSyncService {
                         match.setHomeLogo(teams.get("home").get("logo").asText());
                         match.setAwayTeam(teams.get("away").get("name").asText());
                         match.setAwayLogo(teams.get("away").get("logo").asText());
-                        match.setHomeScore(goals.get("home").isNull() ? null : goals.get("home").asText());
-                        match.setAwayScore(goals.get("away").isNull() ? null : goals.get("away").asText());
+                        match.setHomeScore(goals != null && !goals.get("home").isNull() ? goals.get("home").asText() : null);
+                        match.setAwayScore(goals != null && !goals.get("away").isNull() ? goals.get("away").asText() : null);
                         match.setStatus(status);
                         match.setKickoffUtc(Instant.parse(fixture.get("date").asText()));
                         match.setLeague(league);
 
                         matchRepo.save(match);
+                        count++;
                     }
+                    System.out.println("Saved " + count + " matches for " + name + " from URL: " + url);
+                } else {
+                    System.out.println("No fixtures returned for " + name + " from URL: " + url);
                 }
+            } else {
+                System.err.println("API returned non-OK status (" + response.getStatusCode() + ") for URL: " + url);
             }
         } catch (Exception e) {
             System.err.println("Sync Error for " + name + " (" + url + "): " + e.getMessage());
