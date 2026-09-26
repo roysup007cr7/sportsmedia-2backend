@@ -10,6 +10,8 @@ import com.supriyoroy.sportsmedia.repo.LeagueRepository;
 import com.supriyoroy.sportsmedia.repo.MatchRepository;
 import com.supriyoroy.sportsmedia.repo.SportRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -42,22 +44,35 @@ public class IslSyncService {
         this.sportRepo = sportRepo;
     }
 
-    // Runs once every hour (2 leagues = 48 requests/day, well under your 100 limit)
+    // Runs automatically upon server startup
+    @EventListener(ApplicationReadyEvent.class)
+    public void onStartup() {
+        syncMatches();
+    }
+
+    // Scheduled hourly run
     @Scheduled(cron = "0 0 * * * *")
     public void syncMatches() {
         if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
-        Sport football = sportRepo.findBySlug("football")
-                .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
+        try {
+            Sport football = sportRepo.findBySlug("football")
+                    .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-        // 1. Sync Indian Super League (ID: 323)
-        syncLeague(323, "Indian Super League", "isl", "India", football);
+            // 1. Sync Indian Super League (ID: 323)
+            int currentYear = LocalDate.now().getYear();
+            syncLeague(323, "Indian Super League", "isl", "India", football, String.valueOf(currentYear));
 
-        // 2. Sync UEFA Nations League (ID: 5)
-        syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football);
+            // 2. Sync UEFA Nations League (ID: 5) - query active season cycle
+            syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football, "2024");
+            syncLeague(5, "UEFA Nations League", "nations-league", "Europe", football, String.valueOf(currentYear));
+
+        } catch (Exception e) {
+            System.err.println("Error in syncMatches: " + e.getMessage());
+        }
     }
 
-    private void syncLeague(int apiLeagueId, String name, String slug, String country, Sport sport) {
+    private void syncLeague(int apiLeagueId, String name, String slug, String country, Sport sport, String season) {
         try {
             League league = leagueRepo.findBySlug(slug)
                     .orElseGet(() -> leagueRepo.save(League.builder()
@@ -69,8 +84,7 @@ public class IslSyncService {
                             .active(true)
                             .build()));
 
-            int currentYear = LocalDate.now().getYear();
-            String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + currentYear;
+            String url = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season;
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("x-apisports-key", apiKey);
@@ -81,7 +95,7 @@ public class IslSyncService {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode responseArr = root.get("response");
 
-                if (responseArr != null && responseArr.isArray()) {
+                if (responseArr != null && responseArr.isArray() && responseArr.size() > 0) {
                     for (JsonNode item : responseArr) {
                         JsonNode fixture = item.get("fixture");
                         JsonNode teams = item.get("teams");
@@ -114,7 +128,7 @@ public class IslSyncService {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Sync Error for " + name + ": " + e.getMessage());
+            System.err.println("Sync Error for " + name + " (Season " + season + "): " + e.getMessage());
         }
     }
 }
