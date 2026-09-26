@@ -693,43 +693,54 @@ async function api(path, opts = {}) {
   }
 }
 
+// async function load(silent) {
+//   try {
+//     DATA = await api('/public/home');
+//     if (!DATA.settings) DATA.settings = {};
+//   } catch(e) {
+//     console.warn('Backend connection delayed or offline, loading fallback fixtures:', e);
+//     DATA = demo();
+//     if (!silent) toast('Showing demo fixtures - backend connecting in background...');
+//   }
+//   render();
+// }
+
 async function load(silent) {
-  // Step 1: Render fallback demo fixtures instantly so the UI isn't blank
+  // 1. Render demo fallback instantly
   if (!DATA) {
     DATA = demo();
     render();
   }
 
-  // Step 2: Function to attempt fetching real data from Render backend
+  // 2. Fetch live data from backend
   async function fetchLiveData() {
     try {
       const liveData = await api('/public/home');
-      if (liveData && (liveData.matches || liveData.liveMatches)) {
+      
+      // Accept response as long as it contains items, live, next, or matches
+      if (liveData && (liveData.items || liveData.live || liveData.next || liveData.matches || liveData.hero)) {
         DATA = liveData;
         if (!DATA.settings) DATA.settings = {};
-        render(); // Overwrite demo data with real fixtures from backend
+        render(); // Overwrite demo data with real backend data
         return true;
       }
     } catch(e) {
-      console.warn('Backend waking up or unreachable:', e);
+      console.warn('Backend endpoint error:', e);
       return false;
     }
   }
 
-  // Step 3: Try fetching immediately
+  // 3. Trigger immediate fetch & retry loop
   const success = await fetchLiveData();
-
-  // Step 4: If Render was cold/sleeping, retry every 5 seconds (up to 6 times)
   if (!success) {
-    if (!silent) toast('Waking up live backend server...');
     let retries = 0;
     const retryInterval = setInterval(async () => {
       retries++;
       const isConnected = await fetchLiveData();
-      if (isConnected || retries >= 6) {
-        clearInterval(retryInterval); // Stop polling once connected or max retries reached
+      if (isConnected || retries >= 5) {
+        clearInterval(retryInterval);
       }
-    }, 5000);
+    }, 3000);
   }
 }
 
