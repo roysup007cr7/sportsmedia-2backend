@@ -56,7 +56,7 @@ football:
     enabled: ${FOOTBALL_API_ENABLED:true}
     token: ${FOOTBALL_API_TOKEN:cd764ca97105491188898b7126b212b5}
     base-url: ${FOOTBALL_API_BASE_URL:https://api.football-data.org/v4}
-    competitions: ${FOOTBALL_API_COMPETITIONS:WC,CL,BL1,DED,BSA,PD,FL1,ELC,PPL,EC,SA,PL}
+    competitions: ${FOOTBALL_API_COMPETITIONS:WC,CL,BL1,PD,FL1,ELC,PPL,EC,SA,PL}
     days-ahead: ${FOOTBALL_API_DAYS_AHEAD:14}
     cron: "${FOOTBALL_API_CRON:0 */30 * * * *}"
 
