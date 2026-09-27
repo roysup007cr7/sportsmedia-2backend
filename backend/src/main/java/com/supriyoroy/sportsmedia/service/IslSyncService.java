@@ -29,7 +29,7 @@ public class IslSyncService {
     @Value("${api-football.key:3b8be5131amshec4623e52edf98bp1aecd5jsn82aa6eb1ec6a}")
     private String apiKey;
 
-    @Value("${api-football.base-url:https://api-football-v1.p.rapidapi.com/v3}")
+    @Value("${api-football.base-url:https://free-api-live-football-data.p.rapidapi.com}")
     private String baseUrl;
 
     private final MatchRepository matchRepo;
@@ -49,39 +49,65 @@ public class IslSyncService {
         syncMatches();
     }
 
-    @Scheduled(cron = "0 0 * * * *")
+    // @Scheduled(cron = "0 0 * * * *")
+    // public void syncMatches() {
+    //     if (!enabled || apiKey == null || apiKey.isBlank()) {
+    //         System.out.println("IslSyncService skipped: enabled=" + enabled + ", keyPresent=" + (apiKey != null && !apiKey.isBlank()));
+    //         return;
+    //     }
+
+    //     try {
+    //         Sport football = sportRepo.findBySlug("football")
+    //                 .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
+
+    //         int currentYear = LocalDate.now().getYear();
+    //         int previousYear = currentYear - 1;
+
+    //         System.out.println("Starting fixture sync via RapidAPI...");
+
+    //         // 1. Sync Indian Super League (ID: 323)
+    //         fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
+    //         fetchAndSave(baseUrl + "/fixtures?league=323&season=" + previousYear, 323, "Indian Super League", "isl", "India", football);
+
+    //         // 2. Sync UEFA Nations League (ID: 5)
+    //         fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
+    //         fetchAndSave(baseUrl + "/fixtures?league=5&season=" + previousYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
+    //         fetchAndSave(baseUrl + "/fixtures?league=5&season=" + currentYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
+
+    //         System.out.println("Fixture sync completed successfully.");
+
+    //     } catch (Exception e) {
+    //         System.err.println("Fatal error during syncMatches: " + e.getMessage());
+    //         e.printStackTrace();
+    //     }
+    // }
+@Scheduled(cron = "0 0 * * * *")
     public void syncMatches() {
-        if (!enabled || apiKey == null || apiKey.isBlank()) {
-            System.out.println("IslSyncService skipped: enabled=" + enabled + ", keyPresent=" + (apiKey != null && !apiKey.isBlank()));
-            return;
-        }
+        if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
         try {
             Sport football = sportRepo.findBySlug("football")
                     .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-            int currentYear = LocalDate.now().getYear();
-            int previousYear = currentYear - 1;
-
             System.out.println("Starting fixture sync via RapidAPI...");
 
-            // 1. Sync Indian Super League (ID: 323)
-            fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
-            fetchAndSave(baseUrl + "/fixtures?league=323&season=" + previousYear, 323, "Indian Super League", "isl", "India", football);
+            // 1. Sync ISL
+            fetchAndSave(baseUrl + "/fixtures?league=323&season=2025", 323, "Indian Super League", "isl", "India", football);
 
-            // 2. Sync UEFA Nations League (ID: 5)
-            fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
-            fetchAndSave(baseUrl + "/fixtures?league=5&season=" + previousYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
-            fetchAndSave(baseUrl + "/fixtures?league=5&season=" + currentYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
+            // Pause 1.2s to prevent HTTP 429 Rate Limiting on RapidAPI Free Tier
+            Thread.sleep(1200);
+
+            // 2. Sync UEFA Nations League
+            fetchAndSave(baseUrl + "/fixtures?league=5&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
 
             System.out.println("Fixture sync completed successfully.");
 
         } catch (Exception e) {
-            System.err.println("Fatal error during syncMatches: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error during syncMatches: " + e.getMessage());
         }
     }
 
+    
     private void fetchAndSave(String url, int apiLeagueId, String name, String slug, String country, Sport sport) {
         try {
             League league = leagueRepo.findBySlug(slug)
@@ -96,7 +122,7 @@ public class IslSyncService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("x-rapidapi-key", apiKey);
-            headers.set("x-rapidapi-host", "api-football-v1.p.rapidapi.com");
+            headers.set("x-rapidapi-host", "free-api-live-football-data.p.rapidapi.com");
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
