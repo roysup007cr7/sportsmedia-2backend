@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Service
 public class IslSyncService {
@@ -26,10 +27,10 @@ public class IslSyncService {
     @Value("${api-football.enabled:true}")
     private boolean enabled;
 
-    @Value("${api-football.key:3b8be5131amshec4623e52edf98bp1aecd5jsn82aa6eb1ec6a}")
+    @Value("${api-football.key:a4759894ef3edc59dc1d51149919b1ee}")
     private String apiKey;
 
-    @Value("${api-football.base-url:https://free-api-live-football-data.p.rapidapi.com}")
+    @Value("${api-football.base-url:https://v3.football.api-sports.io}")
     private String baseUrl;
 
     private final MatchRepository matchRepo;
@@ -37,6 +38,9 @@ public class IslSyncService {
     private final SportRepository sportRepo;
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final Set<String> LIVE_STATUSES = Set.of("1H", "HT", "2H", "ET", "BT", "P", "SUSP", "INT", "LIVE");
+    private static final Set<String> UPCOMING_STATUSES = Set.of("NS", "TBD");
 
     public IslSyncService(MatchRepository matchRepo, LeagueRepository leagueRepo, SportRepository sportRepo) {
         this.matchRepo = matchRepo;
@@ -49,39 +53,7 @@ public class IslSyncService {
         syncMatches();
     }
 
-    // @Scheduled(cron = "0 0 * * * *")
-    // public void syncMatches() {
-    //     if (!enabled || apiKey == null || apiKey.isBlank()) {
-    //         System.out.println("IslSyncService skipped: enabled=" + enabled + ", keyPresent=" + (apiKey != null && !apiKey.isBlank()));
-    //         return;
-    //     }
-
-    //     try {
-    //         Sport football = sportRepo.findBySlug("football")
-    //                 .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
-
-    //         int currentYear = LocalDate.now().getYear();
-    //         int previousYear = currentYear - 1;
-
-    //         System.out.println("Starting fixture sync via RapidAPI...");
-
-    //         // 1. Sync Indian Super League (ID: 323)
-    //         fetchAndSave(baseUrl + "/fixtures?league=323&season=" + currentYear, 323, "Indian Super League", "isl", "India", football);
-    //         fetchAndSave(baseUrl + "/fixtures?league=323&season=" + previousYear, 323, "Indian Super League", "isl", "India", football);
-
-    //         // 2. Sync UEFA Nations League (ID: 5)
-    //         fetchAndSave(baseUrl + "/fixtures?league=5&live=all", 5, "UEFA Nations League", "nations-league", "Europe", football);
-    //         fetchAndSave(baseUrl + "/fixtures?league=5&season=" + previousYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
-    //         fetchAndSave(baseUrl + "/fixtures?league=5&season=" + currentYear + "&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
-
-    //         System.out.println("Fixture sync completed successfully.");
-
-    //     } catch (Exception e) {
-    //         System.err.println("Fatal error during syncMatches: " + e.getMessage());
-    //         e.printStackTrace();
-    //     }
-    // }
-@Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0/15 * * * *")
     public void syncMatches() {
         if (!enabled || apiKey == null || apiKey.isBlank()) return;
 
@@ -89,26 +61,26 @@ public class IslSyncService {
             Sport football = sportRepo.findBySlug("football")
                     .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-            System.out.println("Starting fixture sync via RapidAPI...");
+            int currentYear = LocalDate.now().getYear();
 
-            // 1. Sync ISL
-            fetchAndSave(baseUrl + "/fixtures?league=323&season=2025", 323, "Indian Super League", "isl", "India", football);
+            System.out.println("Starting sync for Live & Upcoming fixtures via direct API-Sports...");
 
-            // Pause 1.2s to prevent HTTP 429 Rate Limiting on RapidAPI Free Tier
+            // 1. UEFA Nations League (ID: 5)
+            fetchAndSaveUpcomingAndLive(5, "UEFA Nations League", "nations-league", "Europe", football, currentYear);
+
             Thread.sleep(1200);
 
-            // 2. Sync UEFA Nations League
-            fetchAndSave(baseUrl + "/fixtures?league=5&next=20", 5, "UEFA Nations League", "nations-league", "Europe", football);
+            // 2. Indian Super League (ID: 323)
+            fetchAndSaveUpcomingAndLive(323, "Indian Super League", "isl", "India", football, currentYear);
 
-            System.out.println("Fixture sync completed successfully.");
+            System.out.println("Sync finished successfully.");
 
         } catch (Exception e) {
             System.err.println("Error during syncMatches: " + e.getMessage());
         }
     }
 
-    
-    private void fetchAndSave(String url, int apiLeagueId, String name, String slug, String country, Sport sport) {
+    private void fetchAndSaveUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport, int season) {
         try {
             League league = leagueRepo.findBySlug(slug)
                     .orElseGet(() -> leagueRepo.save(League.builder()
@@ -120,9 +92,22 @@ public class IslSyncService {
                             .active(true)
                             .build()));
 
+            // Query upcoming fixtures and live fixtures
+            String upcomingUrl = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season + "&status=NS";
+            String liveUrl = baseUrl + "/fixtures?league=" + apiLeagueId + "&live=all";
+
+            processEndpoint(upcomingUrl, league);
+            processEndpoint(liveUrl, league);
+
+        } catch (Exception e) {
+            System.err.println("Sync Error for " + name + ": " + e.getMessage());
+        }
+    }
+
+    private void processEndpoint(String url, League league) {
+        try {
             HttpHeaders headers = new HttpHeaders();
-            headers.set("x-rapidapi-key", apiKey);
-            headers.set("x-rapidapi-host", "free-api-live-football-data.p.rapidapi.com");
+            headers.set("x-apisports-key", apiKey);
             HttpEntity<Void> request = new HttpEntity<>(headers);
 
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, request, String.class);
@@ -131,7 +116,7 @@ public class IslSyncService {
                 JsonNode root = objectMapper.readTree(response.getBody());
                 JsonNode responseArr = root.get("response");
 
-                if (responseArr != null && responseArr.isArray() && responseArr.size() > 0) {
+                if (responseArr != null && responseArr.isArray()) {
                     int count = 0;
                     for (JsonNode item : responseArr) {
                         JsonNode fixture = item.get("fixture");
@@ -140,18 +125,19 @@ public class IslSyncService {
 
                         if (fixture == null || teams == null) continue;
 
-                        String statusShort = fixture.get("status") != null && fixture.get("status").get("short") != null 
+                        String statusShort = (fixture.get("status") != null && fixture.get("status").get("short") != null)
                                 ? fixture.get("status").get("short").asText() : "";
 
-                        // SKIP FINISHED MATCHES
-                        if (statusShort.matches("FT|AET|PEN")) {
+                        // Filter strictly for LIVE and UPCOMING (ignores FT, PEN, AET)
+                        if (!LIVE_STATUSES.contains(statusShort) && !UPCOMING_STATUSES.contains(statusShort)) {
                             continue;
                         }
 
-                        MatchStatus status = statusShort.matches("1H|2H|HT|ET|P|LIVE") ? MatchStatus.LIVE : MatchStatus.UPCOMING;
+                        MatchStatus status = LIVE_STATUSES.contains(statusShort) ? MatchStatus.LIVE : MatchStatus.UPCOMING;
 
                         String externalId = "api_football_" + fixture.get("id").asText();
                         MatchEntity match = matchRepo.findByExternalId(externalId).orElse(new MatchEntity());
+
                         match.setExternalId(externalId);
                         match.setHomeTeam(teams.get("home").get("name").asText());
                         match.setHomeLogo(teams.get("home").get("logo").asText());
@@ -166,15 +152,11 @@ public class IslSyncService {
                         matchRepo.save(match);
                         count++;
                     }
-                    System.out.println("Saved " + count + " matches for " + name + " from URL: " + url);
-                } else {
-                    System.out.println("No fixtures returned for " + name + " from URL: " + url);
+                    System.out.println("Saved/Updated " + count + " matches for " + league.getName() + " via " + url);
                 }
-            } else {
-                System.err.println("API returned non-OK status (" + response.getStatusCode() + ") for URL: " + url);
             }
         } catch (Exception e) {
-            System.err.println("Sync Error for " + name + " (" + url + "): " + e.getMessage());
+            System.err.println("Failed to fetch fixtures from " + url + ": " + e.getMessage());
         }
     }
 }

@@ -69,6 +69,6 @@ news:
 
 api-football:
   enabled: ${API_FOOTBALL_ENABLED:true}
-  key: ${API_FOOTBALL_KEY:3b8be5131amshec4623e52edf98bp1aecd5jsn82aa6eb1ec6a}
-  base-url: https://free-api-live-football-data.p.rapidapi.com
+  key: ${API_FOOTBALL_KEY:a4759894ef3edc59dc1d51149919b1ee}
+  base-url: https://v3.football.api-sports.io
   isl-league-id: 323
