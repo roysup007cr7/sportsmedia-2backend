@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.Set;
 
 @Service
@@ -61,17 +60,15 @@ public class IslSyncService {
             Sport football = sportRepo.findBySlug("football")
                     .orElseGet(() -> sportRepo.save(Sport.builder().name("Football").slug("football").sortOrder(1).active(true).build()));
 
-            int currentYear = LocalDate.now().getYear();
-
             System.out.println("Starting sync for Live & Upcoming fixtures via direct API-Sports...");
 
-            // 1. UEFA Nations League (ID: 5)
-            fetchAndSaveUpcomingAndLive(5, "UEFA Nations League", "nations-league", "Europe", football, currentYear);
+            // 1. UEFA Nations League (League ID: 5)
+            fetchAndSaveLeague(5, "UEFA Nations League", "nations-league", "Europe", football);
 
             Thread.sleep(1200);
 
-            // 2. Indian Super League (ID: 323)
-            fetchAndSaveUpcomingAndLive(323, "Indian Super League", "isl", "India", football, currentYear);
+            // 2. Indian Super League (League ID: 323)
+            fetchAndSaveLeague(323, "Indian Super League", "isl", "India", football);
 
             System.out.println("Sync finished successfully.");
 
@@ -80,7 +77,7 @@ public class IslSyncService {
         }
     }
 
-    private void fetchAndSaveUpcomingAndLive(int apiLeagueId, String name, String slug, String country, Sport sport, int season) {
+    private void fetchAndSaveLeague(int apiLeagueId, String name, String slug, String country, Sport sport) {
         try {
             League league = leagueRepo.findBySlug(slug)
                     .orElseGet(() -> leagueRepo.save(League.builder()
@@ -92,8 +89,10 @@ public class IslSyncService {
                             .active(true)
                             .build()));
 
-            // Query upcoming fixtures and live fixtures
-            String upcomingUrl = baseUrl + "/fixtures?league=" + apiLeagueId + "&season=" + season + "&status=NS";
+            // Fetch upcoming 20 matches (works without needing hardcoded season)
+            String upcomingUrl = baseUrl + "/fixtures?league=" + apiLeagueId + "&next=20";
+            
+            // Fetch live matches
             String liveUrl = baseUrl + "/fixtures?league=" + apiLeagueId + "&live=all";
 
             processEndpoint(upcomingUrl, league);
@@ -128,7 +127,7 @@ public class IslSyncService {
                         String statusShort = (fixture.get("status") != null && fixture.get("status").get("short") != null)
                                 ? fixture.get("status").get("short").asText() : "";
 
-                        // Filter strictly for LIVE and UPCOMING (ignores FT, PEN, AET)
+                        // Filter strictly for LIVE and UPCOMING
                         if (!LIVE_STATUSES.contains(statusShort) && !UPCOMING_STATUSES.contains(statusShort)) {
                             continue;
                         }
@@ -152,7 +151,7 @@ public class IslSyncService {
                         matchRepo.save(match);
                         count++;
                     }
-                    System.out.println("Saved/Updated " + count + " matches for " + league.getName() + " via " + url);
+                    System.out.println("Saved/Updated " + count + " matches for " + league.getName() + " via URL: " + url);
                 }
             }
         } catch (Exception e) {
